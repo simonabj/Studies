@@ -13,7 +13,15 @@ mₓ_builtin = mean(x)
 σₓ²_builtin = std(x)^2
 
 step_size = 0.05
-edges = 0:step_size:1
+edges = -0.2:step_size:1.2
 bins = histcounts(x, edges)
-pdf = (bins)./(maximum(bins).-minimum(bins))
-b = bar(edges, bins/N*mₓ, widen=false, bar_width=step_size)
+pdf = bins/sum(bins*step_size)
+
+theoretical_pdf = (x) -> Float64(0 <= x < 1)
+
+plot(edges[1:end-1], pdf, seriestype=:steppost, label="Estimated PDF")
+plot!(edges[1:end-1], theoretical_pdf.(edges[1:end-1]), seriestype=:steppost, label="Theoretical PDF")
+plot!(legend=:bottom)
+title!("PDF of x")
+xlabel!("Value")
+ylabel!("Probability")
