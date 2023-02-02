@@ -1,0 +1,209 @@
+% !TEX program = xelatex
+\documentclass[compress]{beamer}
+
+\usepackage[english]{babel}
+\usepackage{metalogo}
+\usepackage{listings}
+\usepackage{fontspec}
+\usepackage{amsmath, amssymb}
+\usepackage{tikz}
+\usepackage{svg}
+\usepackage[theme=nord,charsperline=60,linenumbers]{jlcode}
+
+\usetheme{Nord}
+
+\setmainfont{Roboto}
+\setmonofont{JuliaMono}
+
+\AtBeginSection[]
+{
+    \begin{frame}[c,noframenumbering,plain]
+        \tableofcontents[sectionstyle=show/hide,subsectionstyle=show/show/hide]
+    \end{frame}
+}
+
+
+\AtBeginSubsection[]
+{
+    \begin{frame}[c,noframenumbering,plain]
+        \tableofcontents[sectionstyle=show/hide,subsectionstyle=show/shaded/hide]
+    \end{frame}
+}
+
+
+\title{Project I: Random Processes}
+\subtitle{Random variables, stationarity \& ergodicity}
+\author{Simon Andreas Bjørn}
+\date{February 7, 2023}
+
+\begin{document}
+
+\begin{frame}[plain,noframenumbering]
+    \maketitle
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{1. Random variables}
+    Importing some statistic and plotting modules
+    \begin{jllisting}[gobble=8]
+        using Printf
+        using Statistics
+        using NaNStatistics
+        using Plots
+    \end{jllisting}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{1.1 Random variables - uniform PDF}
+    We start by sampling the uniform destribution on $\left[0,1\right)$,
+    with $N=10000$ samples.
+    \begin{jllisting}[gobble=8]
+        N = 10_000
+        x = rand(N)
+    \end{jllisting}
+    \pause
+    We then find the first order momentum $m_x = E\{x\}$ and
+    the second order central moment $\sigma_x^2 = E\{(x-m_x)^2\}$
+    \begin{jllisting}[gobble=8]
+        # Evaluate E{x} and E{(x-mₓ)²} by definition
+        mₓ  = sum(x*1/N)
+        σₓ² = sum((x.-mₓ).^2 * 1/N)
+
+        # Evaluate E{x} and E{(x-mₓ)²} by builtin functions
+        mₓ_builtin = mean(x)
+        σₓ²_builtin = std(x)^2
+    \end{jllisting}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Calculation differences}
+    Calculating the difference between the builtin functions and our direct evaluation, we 
+    see that the the two methods are similar.
+    \begin{jllisting}[gobble=8]
+        @printf "mₓ_err: %.4f" abs(mₓ-mₓ_builtin)
+        # -> mₓ_err: 0.0000
+        @printf "σₓ²_err: %.4f" abs(σₓ²-σₓ²_builtin)
+        # -> σₓ²_err: 0.0000
+    \end{jllisting}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Calculating the PDF}
+    We then calculate the pdf using \jlinl{histcounts}, and normalize the PDF.
+    \begin{jllisting}[gobble=8]
+        step_size = 0.05
+        edges = -0.2:step_size:1.2
+        bins = histcounts(x, edges)
+        
+        # Normalize bins to get PDF
+        pdf = bins/sum(bins*step_size)
+
+        # Theoretical PDF
+        theoretical_pdf = (x) -> Float64(0 <= x < 1)
+    \end{jllisting}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Code for plotting the PDF}
+    And we plot the result
+    \begin{jllisting}[gobble=8]
+        plot(
+            edges[1:end-1],
+            pdf,
+            seriestype=:steppost, 
+            label="Estimated PDF"
+        )
+            plot!(
+            edges[1:end-1],
+            theoretical_pdf.(edges[1:end-1]),
+            seriestype=:steppost, label="Theoretical PDF"
+        )
+            plot!(
+            legend=:bottom,
+            background_color=:transparent,
+            foreground_color=:white
+        )
+        title!("PDF of x");xlabel!("Value");
+        ylabel!("Probability");savefig("uniform_pdf.svg")
+    \end{jllisting}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Plot of the PDF}
+    \begin{figure}
+        \includesvg[width=\columnwidth]{"../uniform_pdf.svg"}
+    \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Ensuring properties}
+    We want to verify if our PDF fulfill the 2 following properties: 
+    \begin{enumerate}
+        \item $\forall \alpha, \ f_x(\alpha) \ge 0$ \\
+            \jlinl{reduce(&, pdf .>= 0) # -> true}
+        \item $\int_{-\infty}^{\infty} f_x(\alpha) \; \texttt{d}\alpha = 1$ \\ 
+            \jlinl{abs(sum(pdf*step_size)-1.0) < 1e-12 # -> true}
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Deriving the theoretical mean [$m_x$]}
+    \pause
+    We start at the definition of the mean value which is given by
+    \begin{equation}
+        m_x = E\{x\} = \int_{-\infty}^{\infty}\alpha f_x(\alpha)\texttt{d}\alpha
+    \end{equation}
+    \pause
+    We then use the theoretical probability density function of a uniform distribution
+    which is given by 
+    \begin{equation*}
+        f_x(\alpha) = 
+        \begin{cases}
+            0, & \alpha < a \\
+            \frac{1}{b-a}, & a \le \alpha \le b \\
+            0, & \alpha > b 
+        \end{cases}
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Deriving the theoretical mean [$m_x$]}
+    With $a = 0, b = 1$, we get the theoretical PDF
+    \begin{equation*}
+        f_x(\alpha) = 
+        \begin{cases}
+            0, & \alpha < 0 \\
+            1, & 0 \le \alpha \le 1 \\
+            0, & \alpha > 1 
+        \end{cases}
+    \end{equation*}
+    \pause
+    We simplify eq.1, and get the integral
+    \begin{equation*}
+        m_x = E\{x\} = \int_0^1\alpha \ \texttt{d}\alpha
+    \end{equation*}
+    \pause
+    We simply solve this and get the mean value to be
+    \begin{equation*}
+        m_x = \frac{1}{2} \left[\alpha^2\right]_0^1=\frac{1}{2}
+    \end{equation*}
+\end{frame}
+\begin{frame}
+    \frametitle{Deriving the theoretical variance [$\sigma_x^2$]}
+    \pause
+    Again, we start at the definition
+    \begin{equation}
+        \sigma_x^2=E\left\{(x-m_x)^2\right\}=\int_{-\infty}^{\infty}
+        (\alpha - m_x) f_x( \alpha ) \texttt{d}\alpha
+    \end{equation}
+    \pause
+    We do the same simplification as with the mean value, and and fill in for $m_x$.
+    This gives the variance
+    \begin{align*}
+        \sigma_x^2=& \int_0^1\left(\alpha-\frac{1}{2}\right)^2\ \texttt{d}\alpha \\
+        =& \int_0^1 \alpha^2-\alpha+\frac{1}{4}\ \texttt{d} \alpha \\
+        =& \left[\frac{1}{3}\alpha^3-\frac{1}{2}\alpha^2+\frac{1}{4}\alpha\right]^1_0 \\
+        =& \frac{1}{12} \approx 0.08334
+    \end{align*}
+\end{frame}
+\end{document}
