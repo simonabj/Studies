@@ -6,14 +6,19 @@
 \usepackage{listings}
 \usepackage{fontspec}
 \usepackage{amsmath, amssymb}
+\usepackage{stackrel}
 \usepackage{tikz}
 \usepackage{svg}
+\usepackage{unicode-math}
 \usepackage[theme=nord,charsperline=60,linenumbers]{jlcode}
 
 \usetheme{Nord}
 
 \setmainfont{Roboto}
+% \setsansfont{DejaVu Serif}
 \setmonofont{JuliaMono}
+
+\newcommand{\E}[1]{\ensuremath{E\left\{#1\right\}}}
 
 \AtBeginSection[]
 {
@@ -315,11 +320,144 @@
         title!("PDF of CLT experiment")
         savefig("clt_pdf.svg")
     \end{jllisting}
+    \pause
     \begin{figure}
         \includesvg[height=0.6\textheight]{"../clt_pdf.svg"}
     \end{figure}
 \end{frame}
 
 
+\begin{frame}
+    \frametitle{Theoretical mean of CTF experiment [$m_z$]}
+    We start by noting the random variable for our experiment can be defined as 
+    $Z = \frac{1}{12}\sum_{i=1}^{12}X_i$.\\
+    \pause
+    \medskip 
+    Then
+    \begin{equation*}
+        \E{Z} = \E{\frac{1}{12}\sum_{i=1}^{12}{X_i}} = \frac{1}{12}
+        \E{\sum_{i=1}^{12}{X_i}}=\newline \frac{1}{12}\sum_{i=1}^{12}{\E{X_i}}
+    \end{equation*} 
+    \pause
+    As we know that $\E{X_i}=\frac{1}{2}$, we have
+    \begin{equation*}
+        m_z = \E{Z} = \frac{1}{12}\sum^{12}_{i=1}{\frac{1}{2}}=\frac{1}{2}
+    \end{equation*}
+    % $\E{(X_i - \bar{X_i})^2} = \frac{1}{12}$
+\end{frame}
+
+\begin{frame}
+    \frametitle{Theoretical variance of CTF experiment [$\sigma_z^2$]}
+    We want to find the variance $\sigma_x^2 = \E{(Z-\bar{Z})^2}$, and using 
+    the definition from the previous slide, we have
+    \begin{equation*}
+        \E{(Z-\E{Z})^2}=\E{\left(\frac{1}{12}\sum^{12}_{i=1}{X_i} -
+        \E{\frac{1}{12}\sum^{12}_{i=1}{X_i}}\right)^2}
+    \end{equation*}
+    \pause
+    We simplify, using
+    \begin{equation}
+        \E{X+Y} = \E{X} + \E{Y}
+    \end{equation}
+    and get the following
+    \begin{equation*}
+        \E{(Z-\E{Z})^2}=\E{\left(\frac{1}{12}\sum^{12}_{i=1}{X_i} 
+                - \frac{1}{12}
+        \sum^{12}_{i=1}{\E{X_i}}\right)^2}
+    \end{equation*}
+\end{frame}
+\begin{frame}
+    \frametitle{Theoretical variance of CTF experiment [$\sigma_z^2$]}
+    We factorize and combine our sums to get
+    \begin{equation*}
+        \E{(Z-\E{Z})^2} = \left(\frac{1}{12}\right)^2
+        \E{\left(\sum^{12}_{i=1}{X_i - \E{X_i}}\right)^2}
+    \end{equation*}
+    \pause
+    Expanding the binomial, we get
+    \begin{align*}
+        = & \frac{1}{12^2}\sum^{12}_{i=1}{\E{\left(X_i - \E{X_i}\right)^2}} \\
+        + & 2 \sum^{j\rightarrow12}_{\substack{i=1\\j=2\\i<j}}
+        {\E{(X_i - \E{X_i})(X_j - \E{X_j})}}
+    \end{align*}
+    Which almost looks good, but there is an ugly term from the binomial
+    expansion which ruins the fun.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Theoretical variance of CTF experiment [$\sigma_z^2$]}
+    There is luckely an easy clean-up for this. We know that our separate 
+    observations $X_i$ are all independent. This means that each
+    $\left(X_i-\E{X_i}\right) \text{ for } i=1,2,\dots,12$ are independent. \\
+    \pause
+    We can then use the multiplicative property
+    \begin{alertblock}{Multiplicative Property}
+        For two independent variables $X$ and $Y$, the expectation of their
+        product is equal to the product of the expectation of each variable.
+        \begin{equation*}
+            \E{XY} = \E{X}\E{Y}
+        \end{equation*}
+    \end{alertblock}
+    \pause
+    This allows us to rewrite the additional binomial term as
+    \begin{equation*}
+        % \E{\left(X_i-\E{X_i}\right)\left(X_j-\E{X_j}\right)} = 
+        \E{X_i-\E{X_i}}\cdot\E{X_j-\E{X_j}}
+    \end{equation*}
+\end{frame} 
+
+\begin{frame}
+    \frametitle{Theoretical variance of CTF experiment [$\sigma_z^2$]}
+    We then utilize e.q.(3) on each factor of the binomial term,
+    and we see that 
+    \begin{gather*}
+        \E{X_i-\E{X_i}} = \E{X_i}-\E{\E{X_i}}  =  0 \\
+        \Downarrow \\
+        2 \sum^{j\rightarrow12}_{\substack{i=1\\j=2\\i<j}}
+        { \E{X_i-\E{X_i}}\E{X_j-\E{X_j}}} = 0
+    \end{gather*}
+    And thus the big bad evil term dissapered.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Theoretical variance of CTF experiment [$\sigma_z^2$]}
+    Now that we know the additional term equates to 0 and we know
+    $\E{\left(X_i - \E{X_i}\right)^2}=\frac{1}{12}$, we insert into our
+    equation and get
+    values into our equation
+    \begin{align*}
+        \E{\left(Z-\E{Z}\right)^2} 
+        & = \frac{1}{12^2}\sum^{12}_{i=1}
+        {\E{\left(X_i - \E{X_i}\right)^2}} \\
+        \sigma_z^2  & = \frac{1}{12^2}\sum^{12}_{i=1}
+        {\frac{1}{12}} = \frac{1}{144} \approx 0.0069
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Comparing the theoretical and estimated values}
+    We got our theoretical values to be $m_z=0.5,\; \sigma_z^2=0.0069$.
+    Comparing this to our result from earlier, we see that our estimated
+    values of $m_z=0.499,\; \sigma_z^2=0.007$ is pretty much spot on. \\
+    \medskip
+    We then plot a gaussian curve over our previous plot with these values
+    using the following code
+    \begin{jllisting}[gobble=8]
+        theoretical_pdf = (x) -> 1.0/√(2π*σₓ²)*exp(-(x-mₓ).^2 ./ (2σₓ²))
+        plot(edges[1:end-1], pdf, seriestype=:steppost, label="Estimate")
+        plot!(edges[1:end-1], theoretical_pdf.(edges[1:end-1]), label="Theoretical")
+        plot!(background_color=:transparent,foreground_color=:white)
+        xlabel!("Value"); ylabel!("Propability")
+        title!("PDF of CLT experiment")
+        savefig("clt_pdf_theoretical.svg")
+    \end{jllisting}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Plot of theoretical and estimated PDF}
+    \begin{figure}
+        \includesvg[width=0.9\columnwidth]{"../clt_pdf_theoretical.svg"}
+    \end{figure}
+\end{frame}
 
 \end{document}

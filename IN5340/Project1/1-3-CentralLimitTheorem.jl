@@ -14,13 +14,15 @@ pdf = bins/sum(bins*step_size)
 sum(pdf*step_size)
 
 mₓ = mean(ms)
-σₓ = std(ms)^2
+σₓ² = std(ms)^2
 
 @printf "mₓ: %.3f" mₓ 
-@printf "σₓ²: %.3f" σₓ
+@printf "σₓ²: %.3f" σₓ²
 
-plot(edges[1:end-1], pdf, seriestype=:steppre)
+theoretical_pdf = (x) -> 1.0/√(2π*σₓ²)*exp(-(x-mₓ).^2 ./ (2σₓ²))
+plot(edges[1:end-1], pdf, seriestype=:stepmid, label="Estimate")
+plot!(edges[1:end-1], theoretical_pdf.(edges[1:end-1]), label="Theoretical")
 plot!(background_color=:transparent,foreground_color=:white)
 xlabel!("Value"); ylabel!("Propability")
-title!("PDF of CLT experiment")
-savefig("clt_pdf.svg")
+title!("PDF of CLT experiment with theoretical PDF")
+savefig("clt_pdf_theoretical.svg")
