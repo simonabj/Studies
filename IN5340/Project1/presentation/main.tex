@@ -206,4 +206,120 @@
         =& \frac{1}{12} \approx 0.08334
     \end{align*}
 \end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Repeating the uniform experiment}
+    We repeat the experiment, find the mean and variance of each experiment and
+    accumulate the results.
+    \begin{jllisting}[gobble=8]
+        r = 50 # Repeat r times
+        xs = rand(Float64, (N,r))
+        ms = mean(xs, dims=1)
+        σs = std(xs, dims=1).^2
+        # Accumulate the results
+        i_mean = [mean(ms[1:i]) for i in 1:length(ms)]
+        i_std = [mean(σs[1:i])^2 for i in 1:length(s)]
+        # Plot the results
+        plot(1:r, i_mean, label="Cumulative mean", 
+            legend=:bottomleft, xlabel="Experiment iteration",
+            ylabel="Mean value")
+        plot!( twinx(), i_std, label="Variance",
+            legend=:bottomright, color=:orange, ylabel="Variance")
+        plot!(foreground_color=:white, 
+            background_color=:transparent)
+        savefig!("repeated_experiment_uniform.svg")
+    \end{jllisting}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Repeating the uniform experiment}
+    We can see that the mean and variance approach some values as we perform
+    more experiments
+    \begin{figure}
+        \includesvg[width=0.8\columnwidth]{"../repeated_experiment_uniform.svg"}
+    \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{1.2 Gaussian PDF}
+    We perform the same experiment, but sample using \jlinl{randn}.
+    \begin{jllisting}[gobble=8]
+        N = 10_000
+        x = randn(N)
+        mₓ  = sum(x*1/N)
+        σₓ² = sum((x.-mₓ).^2 * 1/N)
+
+        step_size = 0.1
+        edges = -5.0:step_size:5.0
+        bins = histcounts(x, edges)
+        # Normalize PDF
+        pdf = bins/sum(bins*step_size)
+        theoretical_pdf = (x) -> 1.0/√(2π)*exp(-x.^2 ./ 2)
+    \end{jllisting}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{1.2 Plotting code}
+    We then plot the results in a similar manner as 1.1.
+    \begin{jllisting}[gobble=8]
+        plot( edges[1:end-1], pdf, seriestype=:steppost,
+            label="Estimated PDF", linewidth=2)
+
+        plot!(edges[1:end-1], theoretical_pdf.(edges[1:end-1]),
+            label="Theoretical PDF", linewidth=2)
+
+        plot!(legend=:bottom, background_color=:transparent,
+            foreground_color=:white)
+
+        title!("PDF of x");xlabel!("Value");
+        ylabel!("Probability");
+    \end{jllisting}
+\end{frame}
+
+\begin{frame}
+    \frametitle{1.2 Gaussian PDF plot}    
+    \begin{figure}
+        \includesvg[width=0.9\columnwidth]{../gaussian_pdf.svg}
+    \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{1.3 Central Limit Theorem}
+    Again, we sample \jlinl{rand} as according to the task. We have
+    have the following code.
+    \begin{jllisting}[gobble=8]
+        N = 10_000
+        x = rand(Float64, (12, N))
+        ms = mean(x, dims=1)
+        
+        step_size = 0.01
+        edges = 0.0:step_size:1.0
+        bins = histcounts(ms, edges)
+
+        pdf = bins/sum(bins*step_size)
+        sum(pdf*step_size)
+
+        mₓ = mean(ms)
+        σₓ = std(ms)^2
+
+        @printf "mₓ: %.3f" mₓ  # -> mₓ: 0.499
+        @printf "σₓ²: %.3f" σₓ # -> σₓ²: 0.007
+    \end{jllisting}
+\end{frame}
+\begin{frame}[fragile]
+    We plot the estimated PDF with the following code
+    \begin{jllisting}[gobble=8]
+        plot(edges[1:end-1], pdf, seriestype=:steppre)
+        plot!(background_color=:transparent,foreground_color=:white)
+        xlabel!("Value"); ylabel!("Propability")
+        title!("PDF of CLT experiment")
+        savefig("clt_pdf.svg")
+    \end{jllisting}
+    \begin{figure}
+        \includesvg[height=0.6\textheight]{"../clt_pdf.svg"}
+    \end{figure}
+\end{frame}
+
+
+
 \end{document}
