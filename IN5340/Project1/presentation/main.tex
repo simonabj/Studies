@@ -460,4 +460,151 @@
     \end{figure}
 \end{frame}
 
+\begin{frame}[fragile]
+    \frametitle{2 - Stationarity and ergodicity}
+    \pause
+    We start by defining the functions as described in the task. The Julia
+    version of the code looks pretty similar to that of MATLAB.
+    \begin{jllisting}[gobble=8]
+        function rp1(M,N)
+            a = 0.02; b = 5;
+            Mc = ones(M,1)*b*sin.((1:N)*π/N)'
+            Ac = a*ones(M,1)*vec(1:N)';
+            return (rand(M,N).-0.5).*Mc + Ac
+        end
+        function rp2(M,N)
+            Ar = rand(M,1)*ones(1,N);
+            Mr = rand(M,1)*ones(1,N); 
+            return ( rand(M,N) .- 0.5 ).*Mr + Ar;
+        end
+        function rp3(M,N)
+            a = 0.5; m = 3;
+            return ( rand(M,N) .- 0.5 ) .* m .+ a;
+        end
+    \end{jllisting}
+\end{frame}
+ 
+\begin{frame}[fragile]
+    \frametitle{2a - Stationarity or ergodic?}
+    We then create the M=4 realizations of each process with N=100 points
+    in time.
+    \begin{jllisting}[gobble=8]
+        M = 4; N = 100
+        r1, r2, r3 = rp1(M,N), rp2(M,N), rp3(M,N)
+        plot(
+            [r1', r2', r3'], layout = (3,1), 
+            title=["rp1" "rp2" "rp3"], legend=false,
+            background_color=:transparent,
+            foreground_color=:white
+        )
+        xlabel!("N"); ylabel!("Value")
+    \end{jllisting}
+\end{frame}
+
+\begin{frame}
+    \frametitle{2a - Stationarity or ergodic?}
+    We get the following plot
+    \begin{figure}
+        \includesvg[width=\columnwidth]{"../rp1.svg"}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{2a - Stationarity or ergodic?}
+    By inspection, we see that
+    \begin{itemize}
+        \item rp1 tends to increase in value $\rightarrow$ not stationary
+        \item rp2 spreads out then narrows again $\rightarrow$
+            not stationary
+        \item rp3 stays pretty much the same $\rightarrow$ stationary
+    \end{itemize}
+    We then note that
+    \begin{itemize}
+        \item rp1 is and for early N, will not equal time average
+            $\rightarrow$ not ergodic
+        \item rp2 seems to have different time average on green and blue
+            realization which would not match ensemble average $\rightarrow$
+            not ergodic
+        \item rp3 seems to be quite similar over time and realizations
+            $\rightarrow$ seems ergodic
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{2b - Ensemble averages}
+    We compute the ensemble mean and std of each process
+    and plot them with the following code
+    \begin{jllisting}[gobble=8]
+        M = 80; N = 100
+        r1, r2, r3 = rp1(M,N), rp2(M,N), rp3(M,N)
+
+        means = [mean(r1,dims=1); mean(r2,dims=1);mean(r3,dims=1)]
+        stds =  [std(r1,dims=1);  std(r2,dims=1); std(r3,dims=1)]
+
+        plot(
+            [means', stds'], layout = (2,1),
+            label=["rp1" "rp1" "rp2" "rp2" "rp3" "rp3"],
+            background_color=:transparent,
+            foreground_color=:white,
+            title=["Means" "STDs"]
+        )
+    \end{jllisting}
+\end{frame}
+
+\begin{frame}
+    \frametitle{2b - Ensemble averages}
+    We then get the following plot
+    \begin{figure}
+        \includesvg[width=\columnwidth]{"../ensemble.svg"}
+    \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{2c - Time averages}
+    We estimate the time averages of each process by
+    \begin{jllisting}[gobble=8]
+        M = 4; N = 1000
+        r1, r2, r3 = rp1(M,N), rp2(M,N), rp3(M,N)
+
+        @printf "rp1 | Time averages: [%5.2f, %5.2f, %5.2f, %5.2f]" mean(r1,dims=2)...
+        @printf "rp2 | Time averages: [%5.2f, %5.2f, %5.2f, %5.2f]" mean(r2,dims=2)...
+        @printf "rp3 | Time averages: [%5.2f, %5.2f, %5.2f, %5.2f]" mean(r3,dims=2)...
+    \end{jllisting}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{2c - Time averages}
+    We get the following output
+    \begin{jllisting}[gobble=8]
+        # -> rp1 | Time averages: [10.09, 10.04, 10.00, 10.04]
+        # -> rp2 | Time averages: [ 0.55,  0.11,  0.07,  0.95]
+        # -> rp3 | Time averages: [ 0.55,  0.52,  0.57,  0.46]
+    \end{jllisting}
+    We gather from this that rp3 is ergodic, while rp1 and rp2 are not.
+    \pause
+    Displaying each process as images is pretty streight forward aswell with
+    \begin{jllisting}[gobble=8]
+        l = @layout [rp1 ; rp2 ; rp3]
+        h1 = heatmap(r1)
+        h2 = heatmap(r2)
+        h3 = heatmap(r3)
+        plot(
+            h1, h2, h3, layout = l,
+            title=["rp1" "rp2" "rp3"]
+        )
+    \end{jllisting}
+\end{frame}
+
+\begin{frame}
+    This gives us the following images
+    \begin{figure}
+        \includesvg[width=0.7\columnwidth]{"../images.svg"}
+    \end{figure}
+    \pause
+    Here we can clearly see that rp1 and rp2 are not ergodic as no individual
+    random variable are able to represent the enitre domain of each process.
+    rp3 however, satisfy this criteria, and match with our previous findings
+    about its ergodicity.
+\end{frame}
+
 \end{document}

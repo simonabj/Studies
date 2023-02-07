@@ -20,7 +20,7 @@ mₓ = mean(ms)
 @printf "σₓ²: %.3f" σₓ²
 
 theoretical_pdf = (x) -> 1.0/√(2π*σₓ²)*exp(-(x-mₓ).^2 ./ (2σₓ²))
-plot(edges[1:end-1], pdf, seriestype=:stepmid, label="Estimate")
+plot(edges[1:end-1], pdf, seriestype=:steppost, label="Estimate")
 plot!(edges[1:end-1], theoretical_pdf.(edges[1:end-1]), label="Theoretical")
 plot!(background_color=:transparent,foreground_color=:white)
 xlabel!("Value"); ylabel!("Propability")
