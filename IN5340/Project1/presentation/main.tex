@@ -66,7 +66,7 @@
         N = 10_000
         x = rand(N)
     \end{jllisting}
-    \pause
+    % \pause
     We then find the first order momentum $m_x = E\{x\}$ and
     the second order central moment $\sigma_x^2 = E\{(x-m_x)^2\}$
     \begin{jllisting}[gobble=8]
@@ -153,12 +153,12 @@
 
 \begin{frame}
     \frametitle{Deriving the theoretical mean [$m_x$]}
-    \pause
+    % \pause
     We start at the definition of the mean value which is given by
     \begin{equation}
         m_x = E\{x\} = \int_{-\infty}^{\infty}\alpha f_x(\alpha)\texttt{d}\alpha
     \end{equation}
-    \pause
+    % \pause
     We then use the theoretical probability density function of a uniform distribution
     which is given by 
     \begin{equation*}
@@ -182,12 +182,12 @@
             0, & \alpha > 1 
         \end{cases}
     \end{equation*}
-    \pause
+    % \pause
     We simplify eq.1, and get the integral
     \begin{equation*}
         m_x = E\{x\} = \int_0^1\alpha \ \texttt{d}\alpha
     \end{equation*}
-    \pause
+    % \pause
     We simply solve this and get the mean value to be
     \begin{equation*}
         m_x = \frac{1}{2} \left[\alpha^2\right]_0^1=\frac{1}{2}
@@ -195,13 +195,13 @@
 \end{frame}
 \begin{frame}
     \frametitle{Deriving the theoretical variance [$\sigma_x^2$]}
-    \pause
+    % \pause
     Again, we start at the definition
     \begin{equation}
         \sigma_x^2=E\left\{(x-m_x)^2\right\}=\int_{-\infty}^{\infty}
         (\alpha - m_x) f_x( \alpha ) \texttt{d}\alpha
     \end{equation}
-    \pause
+    % \pause
     We do the same simplification as with the mean value, and and fill in for $m_x$.
     This gives the variance
     \begin{align*}
@@ -320,7 +320,7 @@
         title!("PDF of CLT experiment")
         savefig("clt_pdf.svg")
     \end{jllisting}
-    \pause
+    % \pause
     \begin{figure}
         \includesvg[height=0.6\textheight]{"../clt_pdf.svg"}
     \end{figure}
@@ -331,14 +331,14 @@
     \frametitle{Theoretical mean of CTF experiment [$m_z$]}
     We start by noting the random variable for our experiment can be defined as 
     $Z = \frac{1}{12}\sum_{i=1}^{12}X_i$.\\
-    \pause
+    % \pause
     \medskip 
     Then
     \begin{equation*}
         \E{Z} = \E{\frac{1}{12}\sum_{i=1}^{12}{X_i}} = \frac{1}{12}
         \E{\sum_{i=1}^{12}{X_i}}=\newline \frac{1}{12}\sum_{i=1}^{12}{\E{X_i}}
     \end{equation*} 
-    \pause
+    % \pause
     As we know that $\E{X_i}=\frac{1}{2}$, we have
     \begin{equation*}
         m_z = \E{Z} = \frac{1}{12}\sum^{12}_{i=1}{\frac{1}{2}}=\frac{1}{2}
@@ -354,7 +354,7 @@
         \E{(Z-\E{Z})^2}=\E{\left(\frac{1}{12}\sum^{12}_{i=1}{X_i} -
         \E{\frac{1}{12}\sum^{12}_{i=1}{X_i}}\right)^2}
     \end{equation*}
-    \pause
+    % \pause
     We simplify, using
     \begin{equation}
         \E{X+Y} = \E{X} + \E{Y}
@@ -373,7 +373,7 @@
         \E{(Z-\E{Z})^2} = \left(\frac{1}{12}\right)^2
         \E{\left(\sum^{12}_{i=1}{X_i - \E{X_i}}\right)^2}
     \end{equation*}
-    \pause
+    % \pause
     Expanding the binomial, we get
     \begin{align*}
         = & \frac{1}{12^2}\sum^{12}_{i=1}{\E{\left(X_i - \E{X_i}\right)^2}} \\
@@ -389,7 +389,7 @@
     There is luckely an easy clean-up for this. We know that our separate 
     observations $X_i$ are all independent. This means that each
     $\left(X_i-\E{X_i}\right) \text{ for } i=1,2,\dots,12$ are independent. \\
-    \pause
+    % \pause
     We can then use the multiplicative property
     \begin{alertblock}{Multiplicative Property}
         For two independent variables $X$ and $Y$, the expectation of their
@@ -398,7 +398,7 @@
             \E{XY} = \E{X}\E{Y}
         \end{equation*}
     \end{alertblock}
-    \pause
+    % \pause
     This allows us to rewrite the additional binomial term as
     \begin{equation*}
         % \E{\left(X_i-\E{X_i}\right)\left(X_j-\E{X_j}\right)} = 
@@ -462,7 +462,7 @@
 
 \begin{frame}[fragile]
     \frametitle{2 - Stationarity and ergodicity}
-    \pause
+    % \pause
     We start by defining the functions as described in the task. The Julia
     version of the code looks pretty similar to that of MATLAB.
     \begin{jllisting}[gobble=8]
@@ -514,8 +514,7 @@
     By inspection, we see that
     \begin{itemize}
         \item rp1 tends to increase in value $\rightarrow$ not stationary
-        \item rp2 spreads out then narrows again $\rightarrow$
-            not stationary
+        \item rp2 looks pretty similar over time $\rightarrow$ stationary
         \item rp3 stays pretty much the same $\rightarrow$ stationary
     \end{itemize}
     We then note that
@@ -537,13 +536,14 @@
     \begin{jllisting}[gobble=8]
         M = 80; N = 100
         r1, r2, r3 = rp1(M,N), rp2(M,N), rp3(M,N)
-
-        means = [mean(r1,dims=1); mean(r2,dims=1);mean(r3,dims=1)]
-        stds =  [std(r1,dims=1);  std(r2,dims=1); std(r3,dims=1)]
-
-        plot(
-            [means', stds'], layout = (2,1),
-            label=["rp1" "rp1" "rp2" "rp2" "rp3" "rp3"],
+        l = @layout [means; stds]
+        p1 = plot(mean(r1, dims=1)', label="rp1")
+        plot!(mean(r2, dims=1)', label="rp2")
+        plot!(mean(r3, dims=1)', label="rp3")
+        p2 = plot(std(r1, dims=1)', label="rp1")
+        plot!(std(r2, dims=1)', label="rp2")
+        plot!(std(r3, dims=1)', label="rp3")
+        plot(p1, p2, layout=l,
             background_color=:transparent,
             foreground_color=:white,
             title=["Means" "STDs"]
@@ -581,7 +581,7 @@
         # -> rp3 | Time averages: [ 0.55,  0.52,  0.57,  0.46]
     \end{jllisting}
     We gather from this that rp3 is ergodic, while rp1 and rp2 are not.
-    \pause
+    % \pause
     Displaying each process as images is pretty streight forward aswell with
     \begin{jllisting}[gobble=8]
         l = @layout [rp1 ; rp2 ; rp3]
@@ -600,7 +600,7 @@
     \begin{figure}
         \includesvg[width=0.7\columnwidth]{"../images.svg"}
     \end{figure}
-    \pause
+    % \pause
     Here we can clearly see that rp1 and rp2 are not ergodic as no individual
     random variable are able to represent the enitre domain of each process.
     rp3 however, satisfy this criteria, and match with our previous findings
