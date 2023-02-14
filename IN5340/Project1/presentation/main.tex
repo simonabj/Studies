@@ -72,7 +72,9 @@
     \begin{jllisting}[gobble=8]
         # Evaluate E{x} and E{(x-mₓ)²} by definition
         mₓ  = sum(x*1/N)
+        # -> 0.49863643598
         σₓ² = sum((x.-mₓ).^2 * 1/N)
+        # -> 0.08423047222
 
         # Evaluate E{x} and E{(x-mₓ)²} by builtin functions
         mₓ_builtin = mean(x)
@@ -145,9 +147,13 @@
     We want to verify if our PDF fulfill the 2 following properties: 
     \begin{enumerate}
         \item $\forall \alpha, \ f_x(\alpha) \ge 0$ \\
+            \smallskip
             \jlinl{reduce(&, pdf .>= 0) # -> true}
+            \medskip
         \item $\int_{-\infty}^{\infty} f_x(\alpha) \; \texttt{d}\alpha = 1$ \\ 
+            \smallskip
             \jlinl{abs(sum(pdf*step_size)-1.0) < 1e-12 # -> true}
+            \medskip
     \end{enumerate}
 \end{frame}
 
