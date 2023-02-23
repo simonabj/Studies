@@ -28,6 +28,10 @@
 
 \newcommand{\E}[1]{\ensuremath{E\left\{#1\right\}}}
 
+\hypersetup{
+    colorlinks=true,
+    urlcolor=NordBlue
+}
 
 \DeclareMathOperator*{\argmax}{argmax}
 
@@ -185,8 +189,8 @@
     \frametitle{Implementing the ML estimator}
     We now want to implement the ML esimator.
 
-    {\emph Note: Unnecessary code is left out. (Styling and so on). If curious,
-    check repo at \href{}{}}
+    Note: Unnecessary code is left out. (Styling and so on). If curious,
+    check repo at \href{https://github.com/Dainou01/Studies/tree/main/IN5340/Project2}{here}
     \begin{jllisting}[gobble=8]
         #  Start by getting some packages for this project
         using DSP; using Plots; using Unitful; using MAT
@@ -241,7 +245,7 @@
     \frametitle{Implementing the ML estimator 3}
     Now we implement the xcorr operation...
     \begin{jllisting}[gobble=8]
-        match_filter(ch,signal) = xcorr(ch, signal, padmode=:longest)[end÷2:end]
+        match_filter(ch,signal) = xcorr(ch, signal, padmode=:longest)[end÷2+1:end]
     \end{jllisting}
     and we test it by applying it to 1 channel and the source signal
     \begin{columns}
@@ -269,9 +273,15 @@
     Now we map this as a function on each channel and plot the results.
     \begin{jllisting}[gobble=8]
         compressed = mapslices(
-            ch -> xcorr(ch, s_Tx.(t), padmode=:longest)[end÷2:end][1:1600], 
-            data, dims=(1,)
-        )
+            ch -> match_filter(ch, s_Tx.(t)),
+            data[1:1600,:], dims=(1,)) 
+
+        heatmap(axes(compressed,2), axes(compressed,1)/upreferred(fs), 
+            amp2db.(abs.(compressed)/maximum(abs.(compressed))))
+        plot([
+            plot((1:1600)/upreferred(fs), abs.(d[1:1600,1]))
+            for d in [data, compressed]
+        ]..., layout=[1,1],)
     \end{jllisting}
     \begin{figure}
         \centering
