@@ -1,0 +1,305 @@
+% !TEX program = xelatex
+% vim:foldmethod=marker:foldmarker=<<<,>>>
+\documentclass[compress]{beamer}
+
+%<<< Preamble
+\usepackage[english]{babel}
+\usepackage{metalogo}
+\usepackage{listings}
+\usepackage{fontspec}
+\usepackage{amsmath, amssymb}
+\usepackage{stackrel}
+\usepackage{tikz}
+\usepackage{svg}
+\usepackage{unicode-math}
+\usepackage{subcaption}
+\usepackage[theme=nord,charsperline=60,linenumbers]{jlcode}
+
+\usetheme{Nord}
+
+\setmainfont{Roboto}
+% \setsansfont{DejaVu Serif}
+% \setmonofont{CaskaydiaCove Nerd Font Mono}
+\setmonofont{JuliaMono}
+
+\makeatletter
+\def\verbatim@nolig@list{}
+\makeatother
+
+\newcommand{\E}[1]{\ensuremath{E\left\{#1\right\}}}
+
+
+\DeclareMathOperator*{\argmax}{argmax}
+
+\AtBeginDocument{
+    \fontsize{8}{12}
+    \selectfont
+
+}
+
+\AtBeginSection[]
+{
+    \begin{frame}[c,noframenumbering,plain]
+        \tableofcontents[sectionstyle=show/hide,subsectionstyle=show/show/hide]
+    \end{frame}
+}
+
+
+\AtBeginSubsection[]
+{
+    \begin{frame}[c,noframenumbering,plain]
+        \tableofcontents[sectionstyle=show/hide,subsectionstyle=show/shaded/hide]
+    \end{frame}
+}
+%>>>
+
+\title{Project II: Estimation Theory}
+\subtitle{Maximum likelihood, CRLB \& Least Squares Estimation}
+\author{\Large Simon Andreas Bjørn}
+\date{\large February 28, 2023}
+
+\begin{document}
+
+\begin{frame}[plain,noframenumbering]
+    \maketitle
+\end{frame}
+
+\begin{frame} % <<< 1A.1
+    \frametitle{1A - Maximum Likelihood Estimator}
+    We want to derive the maximum likelihod esimator for the time delay of a pulse
+    in additive gaussian noise. The sent pulse $s(t)$ is received as $x(t)$ after
+    the time delay $\tau_0 = 2r/c$ which is what we want to estimate.
+    \medskip
+    \begin{columns}[t]
+        \begin{column}{0.4\textwidth}
+            \centerline{Model for continues signal}
+            \begin{equation*}
+                x(t) = s(t-\tau_0) + W(t)
+            \end{equation*}
+
+            \begin{itemize}
+                \item $W(t)$ = AGN
+                \item $s(t-\tau_0)$ = received signal. 
+                \item Assume $W$ is bandlimited by $B_w$.
+                \item Sample $W(t)$ with $\Delta=\frac{1}{2}B_w$ s.t. $W[n]=W(n\Delta)$.
+                \item Sampeling the entire noise bandwidth, we can assume the noise to be
+                white. 
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.7\textwidth}
+            \centerline{Model for discrete signal}
+            \begin{equation*}
+                x[n] = s[n-n_0] + W[n]
+            \end{equation*}
+            \begin{itemize}
+                \item Discrete time-delay is given by $\tau_0=n_0\Delta$
+                \item $s[n]$ is non-zero only during pulse length: \\
+                    \begin{equation*}
+                        x[n] = 
+                        \begin{cases}
+                            W[n] & , 0 \le n \le n_0-1 \\
+                            s[n-n_0]+W[n] & , n_0 \le n < n_0 + M \\
+                            W[n] & , n_0 + M \le n \le N
+                        \end{cases}
+                    \end{equation*}
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame} %>>>
+
+\begin{frame} %<<< 1A.2
+    \frametitle{1A - Maximum Likelihood Estimator 2}
+    White gaussian noise means $W[n]$ is independent, so the PDF of $s[n;n_0]$
+    can be factorized into the PDFs of each sub-interval.
+    Split into 3:
+    \begin{enumerate}
+        \item $x[n]=W[n],\; 0 \le n \le n_0-1$:
+            \begin{equation*}
+                \prod^{n_0-1}_{n=0}{\frac{1}{\sqrt{2\pi\sigma^2}}
+                \exp\left(-\frac{x^2[n]}{2 \sigma^2}\right)}
+            \end{equation*}
+        \item $x[n]=S\left[n-n_0\right]+W[n], \; n_0 \le n \le n_0+M-1$:
+            \begin{equation*}
+                \prod^{n_0+M-1}_{n=n_0}{\frac{1}{\sqrt(2\pi\sigma^2)}
+                \exp\left(-\frac{\left(x[n]-s[n-n_0]\right)^2}{2\sigma^2}\right)}
+            \end{equation*}
+        \item $x[n] = W[n], \; n_0+M \le n \le N_1$:
+            \begin{equation*}
+                \prod^{N-1}_{n=n_0+M}{\frac{1}{\sqrt{2\pi\sigma^2}}
+                \exp\left(-\frac{x^2[n]}{2\sigma^2}\right)}
+            \end{equation*}
+    \end{enumerate}
+\end{frame} %>>>
+
+\begin{frame} %<<< 1A.3
+    \frametitle{1A - Maximum Likelihood Estimator 3}
+    We can expand and factorize 1., 2. \& 3. 
+    \begin{gather*}
+        P(x; n_0)  = \left(\frac{1}{\sqrt{2\pi\sigma^2}}\right)^{N-1}
+        \exp\left(-\frac{\sum^{N-1}_{n=0}{x^2[n]}}{2\sigma^2}\right) \\
+        \cdot\exp\left(
+            -\frac{1}{2\sigma^2}
+            \underbrace{
+                \sum^{n_0+M-1}_{n=n_0}{\left(
+                        -2x[n]s[n-n_0]+s^2[n-n_0]
+                \right)}
+            }_{\text{We want to maximize this}}
+        \right)
+    \end{gather*}
+    So we have 
+    \begin{equation*}
+        \underbrace{2}_{\text{const.}}
+        \cdot
+        \underbrace{
+            \sum^{n_0+M-1}_{n=n_0}{x[n]s[n-n_0]}
+        }_{\text{maximize}}
+        +
+        \underbrace{
+            \sum^{n_0+M-1}_{n=n_0}{s^2[n-n_0]}
+        }_{\text{not dependent of } n_0}
+    \end{equation*}
+\end{frame} %>>>
+
+\begin{frame} % <<< Maximum Likelihood Estimator 4
+  \frametitle{Maximum Likelihood Estimator 4}
+    $s[n]$ is 0 outside of limits so we can expand the sum.
+    \begin{equation*}
+        \argmax_{n_0}
+        \left\{
+        \sum^{n_0+M-1}_{n=n_0}{x[n]s[n-n_0]}
+        \right\} = 
+        \argmax_{n_0}\left\{
+            \underbrace{ \sum^{N-1}_{n=0}{x[n]s[n-n_0]} }_{
+                \text{This is just a cross correlation}
+            }
+        \right\}
+    \end{equation*}
+    We then end up with the Maximum Likelihood Estimator (MLE) to be the
+    maximum value of the cross correlation of the signal
+    \begin{equation*}
+    \widehat{n_0}=\argmax_{0\le m \le N-M}\left\{C_{xs}\left[m\right]\right\}
+    \end{equation*}
+\end{frame} % >>>
+
+\begin{frame}[fragile] % <<< Implementing the ML estimator
+    \frametitle{Implementing the ML estimator}
+    We now want to implement the ML esimator.
+
+    {\emph Note: Unnecessary code is left out. (Styling and so on). If curious,
+    check repo at \href{}{}}
+    \begin{jllisting}[gobble=8]
+        #  Start by getting some packages for this project
+        using DSP; using Plots; using Unitful; using MAT
+        import Unitful: Time, s, m, Hz
+        default(background_color=:transparent, foreground_color=:white)
+
+        # Import the MAT file 
+        mat_file = matopen("sonardata2.mat")
+
+        B    = read(mat_file, "B")    * Hz
+        fs   = read(mat_file, "fs")   * Hz
+        c    = read(mat_file, "c")    * m/s
+        T_p  = read(mat_file, "T_p")  * s
+        fc   = read(mat_file, "fc")   * Hz
+        t_0  = read(mat_file, "t_0")  * s
+        data = read(mat_file, "data")
+    \end{jllisting}
+\end{frame} 
+% >>>
+
+\begin{frame}[fragile] % <<< Implementing the ML estimator 2
+    \frametitle{Implementing the ML estimator 2}
+    Now we can define the signal and plot it over time
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{jllisting}[gobble=16]
+                # Signal model
+                α = B / T_p
+
+                s_Tx(t::Time) = (-T_p/2<=t<=T_p/2) 
+                    ? exp(2π*α*t^2/2*im) : 0.0im
+                # Convert any input to Time
+                s_Tx(t) = s_Tx(t*s) 
+
+                # Plot simple signal
+                t = -T_p/2 : 1/fs : T_p/2
+                plot(t,real.(s_Tx.(t)))
+                plot!(t, imag.(s_Tx.(t)))
+            \end{jllisting}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            Plotted output
+            \begin{figure}
+                \includesvg[width=\columnwidth]{"../1b.svg"}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame}
+% >>>
+
+\begin{frame}[fragile] % <<< Implementing the ML estimator 3
+    \frametitle{Implementing the ML estimator 3}
+    Now we implement the xcorr operation...
+    \begin{jllisting}[gobble=8]
+        match_filter(ch,signal) = xcorr(ch, signal, padmode=:longest)[end÷2:end]
+    \end{jllisting}
+    and we test it by applying it to 1 channel and the source signal
+    \begin{columns}
+        \begin{column}{0.53\textwidth}
+            \begin{jllisting}[gobble=16]
+                ml₁ = match_filter(data[:, 1], s_Tx.(t))
+                plot(
+                    axes(ml₁,1)/upreferred(fs),
+                    abs.(ml₁),
+                )
+            \end{jllisting}
+        \end{column}
+        \begin{column}{0.47\textwidth}
+            \begin{figure}
+                Plot generated from code
+                \includesvg[width=\columnwidth]{"../1b2.svg"}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame}
+% >>>
+
+\begin{frame}[fragile] % <<< Applying the ML estimator
+    \frametitle{Applying the ML estimator}
+    Now we map this as a function on each channel and plot the results.
+    \begin{jllisting}[gobble=8]
+        compressed = mapslices(
+            ch -> xcorr(ch, s_Tx.(t), padmode=:longest)[end÷2:end][1:1600], 
+            data, dims=(1,)
+        )
+    \end{jllisting}
+    \begin{figure}
+        \centering
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includesvg[width=\textwidth]{"../1c.svg"}
+        \end{subfigure}%
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includesvg[width=\columnwidth]{"../1c2.svg"}
+        \end{subfigure}
+    \end{figure}
+\end{frame}
+% >>>
+
+\begin{frame} % <<< Applying the ML estimator 2
+    \frametitle{Applying the ML estimator 2}
+    \begin{itemize}
+        \item Looking at the 1600 samples of the raw data, we see that it looksquite noisy,
+            but there seems to be some kind of signal around 0.01s. 
+
+        \item When we perform the cross correlation, we see that a strong peak appear at
+            about 5ms. By the ML estimator this is when it is most likely when we
+            recieve the pulse.
+    \end{itemize}
+\end{frame} % >>>
+
+
+
+
+\end{document}
