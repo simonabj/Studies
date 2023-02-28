@@ -27,16 +27,17 @@ s_Tx(t) = s_Tx(t*s) # Convert any input to Time
 # Plot simple signal
 t = -T_p/2 : 1/fs : T_p/2
 plot(
-    t,    
+    t .|> toUnit(u"ms"),    
     real.(s_Tx.(t)),
     label="Re",
     xlabel="Pulse Time",
     ylabel="Pulse Value",
-    legend=:bottom
+    legend=:bottom,
+    unitformat=:square
 )
 plot!(
-    t, imag.(s_Tx.(t)),
-    label="Im",
+    t .|> toUnit(u"ms"), imag.(s_Tx.(t)),
+    label="Im"
 )
 savefig("1b.svg")
 
@@ -58,7 +59,7 @@ compressed = mapslices(
     data[1:1600,:], dims=(1,)) 
 
 heatmap(
-    axes(compressed,2), axes(compressed,1)/upreferred(fs), 
+    axes(compressed,2), axes(compressed,1)/fs .|> toUnit(u"ms") , 
     amp2db.(abs.(compressed)/maximum(abs.(compressed))),
     # Just label & style
     clims=(-50, 0), colorbar_title=" \nResponse [dB]",
@@ -69,7 +70,7 @@ savefig("1c.svg")
 
 ps = plot(
     [
-        plot((1:1600)/upreferred(fs), abs.(d[1:1600,1]), 
+        plot((1:1600)/fs .|> toUnit(u"ms"), abs.(d[1:1600,1]), 
         unitformat=:square, xlabel="Time", ylabel="Value")
         for d in [data, compressed]
     ]...,
@@ -179,6 +180,7 @@ end
 plot(τ_lse', ylabel="Time delay", xlabel="Channel", unitformat=:square, title="LSE Time delay estimation", label="LSE")
 savefig("3b.svg")
 
-plot(τ_lse'[10:20], ylabel="Time delay", xlabel="Channel", unitformat=:square, title="Time delay estimate comparison", label="LSE")
-plot!(uconvert.(u"ms",τₓ₈'/8fs)[10:20], label="MLE")
+plot(10:20, τ_lse'[10:20], ylabel="Time delay", xlabel="Channel", unitformat=:square, label="LSE")
+plot!(10:20, uconvert.(u"ms",τₓ₈'/8fs)[10:20], label="MLE")
+plot!(xticks=10:20, title="Time delay estimate comparison")
 savefig("3b2.svg")
