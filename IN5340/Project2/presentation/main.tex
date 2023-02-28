@@ -22,8 +22,12 @@
 % \setmonofont{CaskaydiaCove Nerd Font Mono}
 \setmonofont{JuliaMono}
 
+\setbeamercolor{mybullet}{use=itemize item.fg,bg=itemize item.fg,fg=itemize item.fg}
+
 \makeatletter
 \def\verbatim@nolig@list{}
+\newcommand\pin{%
+\parbox[t]{10pt}{\raisebox{0.2pt}{\usebeamercolor[fg]{mybullet}{$\ast$}}}}
 \makeatother
 
 \newcommand{\E}[1]{\ensuremath{E\left\{#1\right\}}}
@@ -34,6 +38,7 @@
 }
 
 \DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\Var}{Var}
 
 \AtBeginDocument{
     \fontsize{8}{12}
@@ -69,7 +74,7 @@
 \end{frame}
 
 \begin{frame} % <<< 1A.1
-    \frametitle{1A - Maximum Likelihood Estimator}
+    \frametitle{Maximum Likelihood Estimator}
     We want to derive the maximum likelihod esimator for the time delay of a pulse
     in additive gaussian noise. The sent pulse $s(t)$ is received as $x(t)$ after
     the time delay $\tau_0 = 2r/c$ which is what we want to estimate.
@@ -112,7 +117,7 @@
 \end{frame} %>>>
 
 \begin{frame} %<<< 1A.2
-    \frametitle{1A - Maximum Likelihood Estimator 2}
+    \frametitle{Maximum Likelihood Estimator 2}
     White gaussian noise means $W[n]$ is independent, so the PDF of $s[n;n_0]$
     can be factorized into the PDFs of each sub-interval.
     Split into 3:
@@ -136,7 +141,7 @@
 \end{frame} %>>>
 
 \begin{frame} %<<< 1A.3
-    \frametitle{1A - Maximum Likelihood Estimator 3}
+    \frametitle{Maximum Likelihood Estimator 3}
     We can expand and factorize 1., 2. \& 3. 
     \begin{gather*}
         P(x; n_0)  = \left(\frac{1}{\sqrt{2\pi\sigma^2}}\right)^{N-1}
@@ -181,7 +186,7 @@
     We then end up with the Maximum Likelihood Estimator (MLE) to be the
     maximum value of the cross correlation of the signal
     \begin{equation*}
-    \widehat{n_0}=\argmax_{0\le m \le N-M}\left\{C_{xs}\left[m\right]\right\}
+        \widehat{n_0}=\argmax_{0\le m \le N-M}\left\{C_{xs}\left[m\right]\right\} \;\text{ with }\; \widehat{\tau} = \widehat{n_0}\Delta
     \end{equation*}
 \end{frame} % >>>
 
@@ -309,7 +314,231 @@
     \end{itemize}
 \end{frame} % >>>
 
+\begin{frame}[fragile] % <<< Estimate time delay using ML
+    \frametitle{Estimate time delay using ML}
+    We now want to estimate the time delay across all channels of the first 1600
+    samples using the ML estimator. 
+    \begin{jllisting}[gobble=8]
+        match_filter(ch,signal) = xcorr(ch, signal, padmode=:longest)[end÷2+1:end] 
+        mle(ch, signal) = match_filter(ch, signal) .|> abs |> argmax
+        s0 = s_Tx.(t)
+        # Resample the signals
+        s4 = resample(s0, 4, dims=(1,))
+        s8 = resample(s0, 8, dims=(1,))
 
+        data_x0 = data[1:1600,:]
+        # Resample the data
+        data_x4 = resample(data[1:1600,:], 4, dims=(1,))
+        data_x8 = resample(data[1:1600,:], 8, dims=(1,))
 
+        # Perform mle on each channel 
+        τₓ₀ = mapslices(x -> mle(x, s0), data_x0, dims=(1,))
+        τₓ₄ = mapslices(x -> mle(x, s4), data_x4, dims=(1,))
+        τₓ₈ = mapslices(x -> mle(x, s8), data_x8, dims=(1,))
+    \end{jllisting}
+\end{frame}
+% >>>
+
+\begin{frame} % <<< Estimate time delay usin ML 2
+    \frametitle{Estimate time delay usin ML 2}
+    \begin{figure}
+        \includesvg[height=0.4\textheight]{"../1d.svg"}
+    \end{figure}
+    \begin{itemize}
+        \item Function of reciever channel?
+        \item We can see that upsampling allows the estimator to evaluate the
+            time delay with more points. We can see this in how the 1x sample
+            snapps to 0.01ms which corresponds with the sampling frequency,
+            while the other allows the timedelay to be estimated at 4x and 8x
+            the sampling frequency respectively.
+    \end{itemize}
+\end{frame} % >>>
+
+\begin{frame}[fragile] % <<<  Cramér-Rao Lower Bound of time delay 
+    \frametitle{ Cramér-Rao Lower Bound of time delay }
+    We now want to apply the CRLB on the time delay estimator. I choose to
+    find the CRLB using the SNR of the match filtered data. We have that the
+    CRLB is implemented by
+
+    \begin{gather*}
+        \Var\left\{\hat{\tau_0}\right\} = \frac{1}{\text{SNR}\cdot \beta^2_\text{rms}}
+    \end{gather*}
+    
+    I start by finding $\beta^2_\text{rms}$ and the SNR.
+
+    \begin{jllisting}[gobble=8]
+        # β²ᵣₘₛ is streight forward
+        β²ᵣₘₛ = (2π)^2*fc^2
+
+        # Map a function that gets the value of the peak, on each channel
+        Signal = map(ch -> abs.(compressed[τₓ₀[ch], ch]), 1:32)
+        # Map a function that gets the value of each sample except the peak, 
+        # on each channel. Then, pass channel to mean.
+        Noise =  map(ch -> abs.(compressed[1:1600 .!= τₓ₀[ch], ch]), 1:32) .|> mean
+
+        SNR = Signal./Noise
+    \end{jllisting}
+\end{frame}
+% >>>
+
+\begin{frame}[fragile] % <<< Cramér-Rao Lower Bound of time delay 2
+    \frametitle{Cramér-Rao Lower Bound of time delay 2}
+    With each factor of the descriminator found, get the CRLB and plot it per channel
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{jllisting}[gobble=16]
+                CRLB = 1 ./ (SNR.*β²ᵣₘₛ)
+                std = sqrt.(CRLB) .|> toUnit(u"µs")
+                plot(std)
+
+                waveperiod = 1/fc |> toUnit(u"µs")
+                res = [minimum(std)/waveperiod, 
+                       maximum(std)/waveperiod]
+                @printf "Lower limit for accuracy: 
+                        (%.3f - %.3f) wave periods" 
+                        res...
+                # -> Lower limit for accuracy: (0.029 - 0.035) wave periods
+            \end{jllisting}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{figure}
+                \includesvg[width=\textwidth]{"../2.svg"}
+            \end{figure}
+        \end{column}
+    \end{columns}
+    We see that not every channel has the same accuracy, and that is fluctuates
+    between 0.029 and 0.035 wave periods.
+\end{frame}
+% >>>
+
+\begin{frame} % <<< Cramér-Rao Lower Bound of time delay 3
+    \frametitle{Cramér-Rao Lower Bound of time delay 3}
+    Overlaying the plot of $\tau_0$ per channel, we get the following plot.
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            We can see that the CRLB dips, for the channels at the center of
+            time delay estimate "step". 
+
+            I interpret this as the estimator to be
+            more accurate at the channels in the center of each step while the
+            transitions where the estimate changes, is more inaccurate. 
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{figure}
+                \includesvg[width=\textwidth]{"../2b.svg"}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame} % >>>
+
+\begin{frame}[fragile] % <<< Least Squares Estimation
+    \frametitle{Least Squares Estimation}
+    Implementing the least squares estimator by using the algorithm from lecture 5.
+    \begin{itemize}
+        \item Upsample by 8 to get the more samples around the peak
+            \begin{jllisting}[gobble=16]
+                upsample = 8
+                x = resample(compressed[:,1], upsample) .|> abs .|> x->x^2
+                N = size(x,1)
+            \end{jllisting}
+        \item Select the samples that are around the peak of the signal
+            \begin{jllisting}[gobble=16]
+                # Index 1:N on boolian check
+                fwhm_filter = x .>= 0.5maximum(x)
+                fwhm_t = ((1:N)./(upsample*fs))[fwhm_filter] .|> toUnit(u"ms")
+                fwhm_x = x[fwhm_filter] .|> log
+            \end{jllisting}
+
+        \item Create observation matrix and perform the least squares fit
+            \begin{jllisting}[gobble=16]
+                H = [r^c for r=fwhm_t, c=0:2]
+                θ = ustrip(H) \ fwhm_x ./ unit.(H[1,:])
+                # '\' doesn't work with units yet, so using 'ustrip' to remove units from H and 'unit' to reapply units to result
+            \end{jllisting}
+    \end{itemize}
+\end{frame}
+% >>>
+
+\begin{frame}[fragile] % <<< Least Squares Estimation 2
+    \frametitle{Least Squares Estimation 2}
+    \begin{itemize}
+        \item Using the parameter $\hat{\theta}$, we calculate the time delay, pulse width and intensity
+            \begin{jllisting}[gobble=16]
+                σ = sqrt(-1/(2θ[3]))         # -> 0.0143ms
+                τ = -θ[2] / 2θ[3]            # -> 3.5494ms
+                I = exp(θ[1] - θ[2]^2/4θ[3]) # -> 6.5722e6
+            \end{jllisting}
+    \end{itemize}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+        \pin Lastly, recostruct a gaussian with the specified parameters
+            \begin{jllisting}[gobble=16]
+                g(t) = I*exp(-(t-τ)^2/(2σ^2))
+            \end{jllisting}
+            Plotting the signal around the peak, we have the following plot
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{figure}
+                \includesvg[width=\columnwidth]{"../3a.svg"}
+            \end{figure}
+        \end{column}
+    \end{columns}
+
+\end{frame}
+% >>>
+
+\begin{frame}[fragile] % <<< Least Squares Estimation 3
+    \frametitle{Least Squares Estimation 3}
+    Wrapping it into a function of samples, which returns
+    the parameters ...
+    \begin{jllisting}[gobble=8]
+        function lse(samples, upsample=8)
+            x = resample(samples, upsample)
+            N = size(x, 1)
+
+            fwhm_filter = x .>= 0.5maximum(x)
+            fwhm_t = ((1:N) ./ (upsample*fs))[fwhm_filter] .|> toUnit(u"ms")
+            fwhm_x = x[fwhm_filter] .|> log
+
+            H = [r^c for r=fwhm_t, c=0:2]
+            θ = ustrip(H) \ fwhm_x ./ unit.(H[1,:])
+            return sqrt(-1/(2θ[3])), -θ[2] / 2θ[3], exp(θ[1] - θ[2]^2/4θ[3])
+        end
+    \end{jllisting}
+    allows us to map the {\texttt lse} function onto the compressed data as a
+    function of the channels
+    \begin{jllisting}[gobble=8]
+        τ_lse = mapslices(
+            ch -> lse(ch)[2], # For each channel, get the 2nd parameter from lse
+            compressed,
+            dims=1
+        )
+    \end{jllisting}
+\end{frame}
+% >>>
+
+\begin{frame} % <<< Least Squares Estimation 4
+    \frametitle{Least Squares Estimation 4}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{itemize}
+                \item We see that the time delay estimate is larger for later channels.
+                \item Comparing the time delay from LSE to that of the MSE, we see
+                    that the MSE stagger between channels, while the LSE is a lot smoother.
+                \item MSE estimates the time delay to be the most likely sample at which
+                    it can occur
+                \item LSE interpolates the time delay to be a best possible fit to a quadratic polynomial.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{figure}
+                \includesvg[width=0.9\columnwidth]{"../3b.svg"}
+            \end{figure}
+            \begin{figure}
+                \includesvg[width=0.9\columnwidth]{"../3b2.svg"}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame} % >>>
 
 \end{document}
