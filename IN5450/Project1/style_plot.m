@@ -36,6 +36,9 @@ for idx = 1:numel(handle.Children)
                 subchild = child.Children(subchild_idx);
             if isa(subchild, 'matlab.graphics.illustration.ColorBar')
                 set(subchild, 'Color', ax_color); 
+            elseif isa(subchild, 'matlab.graphics.illustration.Legend')
+                set(subchild, 'TextColor', ax_color);
+                set(subchild, 'Color', 'none');
             else
                 display(class(subchild))
                 set(subchild, 'Color', color);
@@ -45,6 +48,9 @@ for idx = 1:numel(handle.Children)
                 set(subchild, 'ZColor', ax_color);
             end
         end
+    elseif isa(child, 'matlab.graphics.illustration.Legend')
+        set(child, 'TextColor', ax_color);
+        set(child, 'Color', 'none');
     else
         set(child, 'Color', color);
         set(child.Title, 'Color', ax_color);
