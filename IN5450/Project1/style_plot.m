@@ -52,6 +52,12 @@ for idx = 1:numel(handle.Children)
         set(child, 'TextColor', ax_color);
         set(child, 'Color', 'none');
     else
+        if numel(child.YAxis) > 1
+            for axis_idx = 1:numel(child.YAxis)
+                subchild = child.YAxis(axis_idx);
+                set(subchild, 'Color', ax_color);
+            end
+        end
         set(child, 'Color', color);
         set(child.Title, 'Color', ax_color);
         set(child, 'XColor', ax_color);

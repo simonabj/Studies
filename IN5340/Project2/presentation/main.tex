@@ -312,6 +312,17 @@
             about 5ms. By the ML estimator this is when it is most likely when we
             recieve the pulse.
     \end{itemize}
+    \begin{figure}
+        \centering
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includesvg[width=\textwidth]{"../1c.svg"}
+        \end{subfigure}%
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includesvg[width=\columnwidth]{"../1c2.svg"}
+        \end{subfigure}
+    \end{figure}
 \end{frame} % >>>
 
 \begin{frame}[fragile] % <<< Estimate time delay using ML
@@ -345,7 +356,6 @@
         \includesvg[height=0.4\textheight]{"../1d.svg"}
     \end{figure}
     \begin{itemize}
-        \item Function of reciever channel?
         \item We can see that upsampling allows the estimator to evaluate the
             time delay with more points. We can see this in how the 1x sample
             snapps to 0.01ms which corresponds with the sampling frequency,

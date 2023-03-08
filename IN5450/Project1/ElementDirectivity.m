@@ -56,19 +56,17 @@ style_plot(gcf(), "nord");
 exportgraphics(gcf, "11.pdf", "BackgroundColor", "none", "ContentType", "vector")
 
 %% Introduce steering
-k0 = sin(-pi/6);
-
-% d=lambda
 figure(12);
 subplot(2,1,1);
 d = P.lambda;
+k0 = -pi/6 / (d/2);
 xpos = linspace(-d*M/2, d*M/2, M);
 ks = linspace(-1,1,N); % sin(theta)
-kx = 2*pi/P.lambda*(ks-k0);
+kx = 2*pi/P.lambda*ks;
 weights = ones(M, 1);
 weights = weights/sum(weights(:));
 
-We = sin(kx*d/2) ./ (kx / 2);
+We = sin((kx-k0)*d/2) ./ ((kx-k0) / 2);
 Wa = beampattern(xpos, kx - k0, weights);
 Wtot = We.'.*Wa;
 
@@ -88,14 +86,15 @@ style_plot(gcf(), "nord");
 % d = 2lambda
 subplot(2,1,2);
 d = 2*P.lambda;
+k0 = -pi/6 / (d/4);
 xpos = linspace(-d*M/2, d*M/2, M);
 ks = linspace(-1,1,N); % sin(theta)
-kx = 2*pi/P.lambda*(ks-k0);
+kx = 2*pi/P.lambda*ks;
 weights = ones(M, 1);
 weights = weights/sum(weights(:));
 
-We = sin(kx*d/2) ./ (kx / 2);
-Wa = beampattern(xpos, kx, weights);
+We = sin((kx-k0)*d/2) ./ ((kx-k0) / 2);
+Wa = beampattern(xpos, kx-k0, weights);
 Wtot = We.'.*Wa;
 
 plot(ks, db(abs(Wa)/max(abs(Wa))))
