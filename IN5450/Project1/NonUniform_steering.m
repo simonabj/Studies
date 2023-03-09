@@ -127,15 +127,15 @@ y2 = comp3(:, 2);
 grid on;
 yyaxis left;
 plot(x1,comp3(:,:), "Color", "#D95319");
-legend(["-3dB" "-6dB"])
+legend(["-3dB" "-6dB"]);
 
 ylim(y_lim1);
-xlabel("Steering angle $[\sin( \theta )]$", "Interpreter","latex")
-ylabel("k")
+xlabel("Steering angle $[\sin( \theta )]$", "Interpreter","latex");
+ylabel("k");
 
 yyaxis right;
-ylim(y_lim2)
-ylabel("deg", "Interpreter","latex")
-title("-3dB Width of mainlobe with steering")
-style_plot(gcf(), "nord")
-exportgraphics(gcf, "8.pdf", "BackgroundColor", "none", "ContentType", "vector")
+ylim(y_lim2);
+ylabel("deg", "Interpreter","latex");
+title("-3dB Width of mainlobe with steering");
+style_plot(gcf(), "nord");
+exportgraphics(gcf, "8.pdf", "BackgroundColor", "none", "ContentType", "vector");

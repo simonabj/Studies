@@ -1,0 +1,152 @@
+========== ASA.m ==========
+diary on
+################
+diary off
+
+
+========== GratingLobes.m ==========
+diary on
+matlab.graphics.axis.Axes
+matlab.graphics.axis.Axes
+matlab.graphics.axis.Axes
+matlab.graphics.axis.Axes
+matlab.graphics.axis.Axes
+matlab.graphics.axis.Axes
+matlab.graphics.axis.Axes
+matlab.graphics.axis.Axes
+diary off
+
+========== NonUniform_steering.m ==========
+diary on
+diary off
+
+========== Thinning.m ==========
+diary on
+
+ans = 
+
+    "======================= 25 elements ======================="
+
+
+ans = 
+
+    "Main lobe mean width @ -3dB: 0.0148 [± 0.0016]"
+
+
+ans = 
+
+    "Main lobe mean width @ -6dB: 0.0213 [± 0.0023]"
+
+
+ans = 
+
+    "Mean sidelobe level: -7.5896
+      Max sidelobe level: 0.9715"
+
+
+ans = 
+
+    "======================= 50 elements ======================="
+
+
+ans = 
+
+    "Main lobe mean width @ -3dB: 0.0149 [± 0.0016]"
+
+
+ans = 
+
+    "Main lobe mean width @ -6dB: 0.0219 [± 0.0012]"
+
+
+ans = 
+
+    "Mean sidelobe level: -11.4950
+      Max sidelobe level: 1.2924"
+
+
+ans = 
+
+    "======================= 75 elements ======================="
+
+
+ans = 
+
+    "Main lobe mean width @ -3dB: 0.0147 [± 0.0015]"
+
+
+ans = 
+
+    "Main lobe mean width @ -6dB: 0.0220 [± 0.0003]"
+
+
+ans = 
+
+    "Mean sidelobe level: -13.0429
+      Max sidelobe level: 1.5371"
+
+
+ans = 
+
+    "====================== 101 elements ======================="
+
+
+ans = 
+
+    "Main lobe width @ -3dB: 0.0140"
+
+
+ans = 
+
+    "Main lobe width @ -6dB: 0.0220"
+
+
+ans = 
+
+    "Max sidelobe level: -13.3277"
+
+
+ans = 
+
+    "====================== Optimized minimum beamwidth ======================="
+
+
+ans = 
+
+    "Main lobe width @ -3dB: 0.0180"
+
+
+ans = 
+
+    "Main lobe width @ -6dB: 0.0260"
+
+
+ans = 
+
+    "Max sidelobe level: -12.0399"
+
+
+ans = 
+
+    "====================== Optimized minimum sidelobe ======================="
+
+
+ans = 
+
+    "Main lobe width @ -3dB: 0.0180"
+
+
+ans = 
+
+    "Main lobe width @ -6dB: 0.0260"
+
+
+ans = 
+
+    "Max sidelobe level: -12.0399"
+
+diary off
+
+========== ElementDirectivity.m ==========
+diary on
+diary off

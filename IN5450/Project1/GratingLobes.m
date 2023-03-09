@@ -58,8 +58,8 @@ title("-6 dB width [sin(θ)]")
 nexttile, plot(betas, comp(:,3)); xlim([0 5]); grid on;
 title("Sidelobe height [dB]")
 nexttile, plot(betas, comp(:,4)); xlim([0 5]); grid on;
-title("White noise gain")
-xlabel(t, "$\beta$", "Interpreter", "latex", "FontSize", 18)
-ylabel(t, "Value", "FontSize", 14)
-style_plot(gcf(), "nord")
-exportgraphics(gcf, "5.pdf", "BackgroundColor", "none", "ContentType", "vector")
+title("White noise gain");
+xlabel(t, "$\beta$", "Interpreter", "latex", "FontSize", 18);
+ylabel(t, "Value", "FontSize", 14);
+style_plot(gcf(), "nord");
+exportgraphics(gcf, "5.pdf", "BackgroundColor", "none", "ContentType", "vector");
