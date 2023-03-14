@@ -1,0 +1,81 @@
+% !TEX program = xelatex
+% vim:foldmethod=marker:foldmarker=<<<,>>>
+\documentclass[compress]{beamer}
+
+%<<< Preamble
+\usepackage[english]{babel}
+\usepackage{metalogo}
+\usepackage{listings}
+\usepackage{fontspec}
+\usepackage{amsmath, amssymb}
+\usepackage{stackrel}
+\usepackage{tikz}
+\usepackage{svg}
+\usepackage{unicode-math}
+\usepackage{subcaption}
+\usepackage[theme=nord,charsperline=60,linenumbers]{jlcode}
+
+\usetheme{Nord}
+
+\setmainfont{Roboto}
+% \setsansfont{DejaVu Serif}
+% \setmonofont{CaskaydiaCove Nerd Font Mono}
+\setmonofont{JuliaMono}
+
+
+\makeatletter
+\def\verbatim@nolig@list{}
+\newcommand\pin{%
+\parbox[t]{10pt}{\raisebox{0.2pt}{\usebeamercolor[fg]{mybullet}{$\ast$}}}}
+\makeatother
+
+\newcommand{\E}[1]{\ensuremath{E\left\{#1\right\}}}
+\newcommand{\norm}[1]{\ensuremath{\lVert#1\rVert}}
+\newcommand*{\thead}[1]{\multicolumn{1}{c}{\bfseries #1}}
+
+\newfontfamily\tabulartext[SizeFeatures={Size=6}]{Roboto}
+
+
+\hypersetup{
+    colorlinks=true,
+    urlcolor=NordBlue
+}
+
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\Var}{Var}
+
+\AtBeginDocument{
+    \fontsize{8}{12}
+    \selectfont
+
+}
+
+\AtBeginSection[]
+{
+    \begin{frame}[c,noframenumbering,plain]
+        \tableofcontents[sectionstyle=show/hide,subsectionstyle=show/show/hide]
+    \end{frame}
+}
+
+
+\AtBeginSubsection[]
+{
+    \begin{frame}[c,noframenumbering,plain]
+        \tableofcontents[sectionstyle=show/hide,subsectionstyle=show/shaded/hide]
+    \end{frame}
+}
+%>>>
+
+\title{Project IV: Detection theory}
+\subtitle{}
+\author{\Large Simon Andreas Bjørn}
+\date{\large March 14, 2023}
+
+\begin{document}
+
+\begin{frame}[plain,noframenumbering]
+    \maketitle
+\end{frame}
+
+
+\end{document}
