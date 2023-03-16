@@ -35,7 +35,6 @@
 
 \newfontfamily\tabulartext[SizeFeatures={Size=6}]{Roboto}
 
-
 \hypersetup{
     colorlinks=true,
     urlcolor=NordBlue
@@ -77,5 +76,54 @@
     \maketitle
 \end{frame}
 
+\begin{frame} % <<< PDF of measurement
+    \frametitle{PDF of measurement}
+    We first want to define the PDF of $f_\theta\left(x\right)$ which is the
+    PDF of the {\em signal} + {\em noise}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            We have a SNR-PDF model as shown on the right.
+            We notice that:
+            \begin{itemize}
+                \item Noise PDF is i.i.d. and sampled around 0
+                \item Signal PDF $f_\theta$ average at $\theta$
+                \item The noise is additive to the signal
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{figure}
+                \includegraphics[width=\columnwidth]{"../PDFs.pdf"}
+            \end{figure}
+        \end{column}
+    \end{columns}
+    With the noise characterized and distributed $n \sim \mathcal{N}\left(0,\sigma\right)$, we have that
+    the signal is distributed $s \sim \mathcal{N}\left(\theta,\sigma\right)$
+    which gives the PDF
+    \begin{equation*}
+        f_\theta (x) = \frac{1}{\sqrt{2\pi}\sigma^2}e^{-\frac{\left(x-\theta\right)^2}{2\sigma^2}}
+    \end{equation*}
+\end{frame} % >>>
+
+\begin{frame}[fragile] % <<< Specific detection problem
+    \frametitle{Specific detection problem}
+    Now we assume that $\theta = 5$ and $\sigma = 5$. Plotting this yields the 
+    following plot
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{jllisting}[gobble=16]
+                # Code for calculation
+                θ = σ = 5
+                fn = Normal(0,σ); fs = Normal(θ,σ)
+                lines!(fn); lines!(fs)
+            \end{jllisting}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{figure}
+                \includegraphics[width=\columnwidth]{"../b.pdf"}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame} 
+% >>>
 
 \end{document}
