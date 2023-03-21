@@ -123,7 +123,43 @@
             \end{figure}
         \end{column}
     \end{columns}
+    I would say that this detection problem is quite tricky, because the two
+    distributions are quite close together. The overlap of the false alarm and
+    the detected signal is large, and so actually classifying what is noise
+    and what is a true signal is difficult.
 \end{frame} 
+% >>>
+
+\begin{frame}[fragile] % <<< CFAR detector with $P_{FA}] = 0.1$
+    \frametitle{CFAR detector with $P_{FA} = 0.1$}
+    
+    We want a threshold $\beta$ such that $P_{FA} = 0.1$, which is given by 
+    $$\int^{\infty}_{\beta}{f_n(x)dx} = P_n(\beta \le x) = 1-F_n(\beta)$$ where $F_n(x)$ is the CDF
+    of the noise PDF. We know that the quantile function 
+    $Q: \left[0,1\right] \rightarrow \mathbb{R}$ is defined as the inverse CDF, s.t.
+    $Q_n(q) = F^{-1}_n(q)$. This gives the threshold 
+    $\beta = Q_n\left(1-P_{FA}\right)$. With $\beta$ given, we can easly find $P_D$ by
+    $1-F_s\left(\beta\right)$.
+
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{jllisting}[gobble=16]
+                β = cquantile(fn, 0.1)
+                P_fa = ccdf(fn, β)
+                P_d  = ccdf(fs, β)
+            \end{jllisting}
+
+            As we can see in the plot and evaluations, we we get a threshold at
+            $\beta = 6.41$ with a $P_D = 0.39$. That is, there is a 39\% chance
+            for a correct detection
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{figure}
+                \includegraphics[width=\columnwidth]{"../c.pdf"}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame}
 % >>>
 
 \end{document}
