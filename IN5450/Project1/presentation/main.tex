@@ -96,8 +96,8 @@
     \begin{itemize}
         \item Left plot is the wave field $U(x,y,z=z_0)$, of a uniform square point source with $D=15\lambda$
         \item Right plot is the pressure along the x-axis at $y = 0, z=z_0$.
-        \item Gibbs effect $\rightarrow$ Square source gives frequency discontinuety.
-        \item Ripples in the x- and yaxis
+        \item FFT of the Box-function is the sinc.
+        \item Square-array = 2d-box function, so its a sinc along x- and y-axis
     \end{itemize}
     The wave field has propagated a minimal amount from the true source at $z=0$.
 \end{frame} % >>>
@@ -119,10 +119,10 @@
         \end{column}
     \end{columns}
     \vspace{1mm}
-    For the near field, I chose the Fresnel-limit
-    at $d_F = \frac{D^2}{4λ} \approx 0.028m$. We see a clear difference between the
-    wave field at the Fresnel-limit and in the far field. \\
-    \pin Taper has reduced the high frequencies of the Gibbs effect.
+    For the near field, I read from the preassure along $z$ at $x=0$, and pick
+    $d_nf = 0.014m$. We see that the near field farfield limit closely resembles
+    that of the farfield.\\
+    \pin Tapering has reduced the effects of the sinc appearance from 1.
     
 \end{frame}
 % >>>
@@ -164,14 +164,14 @@
 
 \begin{frame}[fragile] % <<< Element weighting and spacing
     \frametitle{Element weighting and spacing}
-    We now want to apply a temper to the array, using a Kaiser windo and see how
+    We now want to apply a taper to the array, using a Kaiser windo and see how
     different windows impact the array pattern.
     
     Applying the window is pretty streight forward
     \begin{enumerate}
         \item Create a window of given length and shape
         \item Normalize window so sum of elements are 1
-        \item Apply temper to beampattern
+        \item Apply taper to beampattern
     \end{enumerate}
 
     \begin{jllisting}[gobble=8,language=Matlab]
@@ -210,7 +210,7 @@
                 \item Suppresses the height of the sidelobes
                 \item Decreases the white noise gain
             \end{itemize}
-            {\bf Conclusion}: there is a trade-off when using the temper. It supresses the 
+            {\bf Conclusion}: there is a trade-off when using the taper. It supresses the 
             sidelobes to some degree at the cost of angular resolution.
         \end{column}
     \end{columns}

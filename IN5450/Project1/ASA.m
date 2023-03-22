@@ -39,7 +39,7 @@ exportgraphics(gcf(), "1b.pdf", "BackgroundColor", "none", "ContentType", "vecto
 
 
 
-%% Apply Temper
+%% Apply Taper
 Kernel = hanning(3)*hanning(3).';
 Kernel = Kernel/sum(Kernel(:));
 U0Mod = conv2(U0, Kernel, 'same');
@@ -81,11 +81,11 @@ grid on;
 title("Pressure along z at x = 0.")
 
 subplot(3,1,2);
-nearfar_limit = (15*P.lambda)^2/(4*P.lambda);
+nearfar_limit = 0.14;
 plot(P.ax, db(abs(Resp(:, floor(nearfar_limit/dz) ))))
 xlabel("x [m]"); ylabel("Pressure [dB]");
 ylim(max(db(abs(Resp(:))))+[-40 0]); grid on;
-title("Center-cut of wave field along x near Fresnel-limit at z = 0.028m");
+title("Center-cut of wave field along x at near-field farfield limit (z=0.14)");
 
 subplot(3,1,3);
 plot(P.ax, db(abs(Resp(:, end))))

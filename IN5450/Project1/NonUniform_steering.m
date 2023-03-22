@@ -2,6 +2,7 @@
 M = 24;
 N = 5000;
 P = ASAparameters;
+d  = P.lambda/2;
 D = M*d;
 xpos = linspace(-D/2, D/2, M);
 
@@ -19,7 +20,7 @@ e_n = [-0.017 -0.538 -0.617 -1.000 -1.142 -1.372 -1.487 ...
 
 d_n = (n/2 + e_n)*d;
 ElPos = [-fliplr(d_n) d_n];
-
+D = ElPos(end) - ElPos(1);
 Wold = beampattern(xpos, kx, weights);
 W = beampattern(ElPos, kx, weights);
 
@@ -61,11 +62,11 @@ GW = (norm(a * W')^2) / (W'*W);
 %% Steering (7)
 N = 5000;
 ks = linspace(-2, 2, N);
-kx = 2*pi/P.lambda*ks;
-k0 = pi/(3*d);
+k0 = pi/(3);
+
 norm_win=weights/sum(weights(:));
-W1 = beampattern(ElPos, kx - k0, norm_win);
-W2 = beampattern(ElPos, kx, norm_win);
+W1 = beampattern(ElPos, 2*pi/P.lambda*(ks - k0), norm_win);
+W2 = beampattern(ElPos, 2*pi/P.lambda*ks, norm_win);
 
 figure(8);close(8);figure(8);
 hold on;
@@ -81,8 +82,8 @@ style_plot(gcf(), "nord");
 exportgraphics(gcf, "7a.pdf", "BackgroundColor", "none", "ContentType", "vector")
 
 %% Steering Uniform array (7.2)
-W1 = beampattern(xpos, kx - k0, norm_win);
-W2 = beampattern(xpos, kx, norm_win);
+W1 = beampattern(xpos, 2*pi/P.lambda*(ks - k0), norm_win);
+W2 = beampattern(xpos, 2*pi/P.lambda*ks, norm_win);
 
 figure(9);close(9);figure(9);
 hold on;

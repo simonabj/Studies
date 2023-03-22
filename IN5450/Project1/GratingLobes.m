@@ -1,6 +1,6 @@
 %% Task 4
 M = 24;
-N = 5000;
+N = 20000;
 P = ASAparameters;
 
 DXs = [P.lambda/4 P.lambda/2 P.lambda 2*P.lambda];
