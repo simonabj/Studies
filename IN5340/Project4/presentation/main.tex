@@ -1,6 +1,6 @@
 % !TEX program = xelatex
 % vim:foldmethod=marker:foldmarker=<<<,>>>
-\documentclass[compress]{beamer}
+\documentclass[compress,aspectratio=169]{beamer}
 
 %<<< Preamble
 \usepackage[english]{babel}
@@ -161,5 +161,43 @@
     \end{columns}
 \end{frame}
 % >>>
+
+\begin{frame} % <<< Multi-measure over transmit
+    \frametitle{Multi-measure over transmit}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            We now want to measure multiple times per transmit, such that 
+            \begin{alignat*}{2}
+                H_{0}^{'} &: x_n = n_n &&\text{ for } n=1,\dots,N \\
+                H_{1}^{'} &: x_n = \theta + n_n &&\text{ for } n=1,\dots,N
+            \end{alignat*}
+            We know that the joint PDF for $N$ samples of the white additive noise is
+            given by 
+            \begin{equation*}
+                f_N\left(n\right) = \frac{1}{\left(2\pi\sigma^2\right)^{N/2}}\exp{\left(
+                        -\sum^{N}_{n=1}{\frac{n_n^2}{2\sigma^2}}
+                \right) }
+            \end{equation*}
+            Since we see that $x_n$ has a Gaussian distribution, we find the mean
+            $\E{x_n} = \E{x_n} = \E{\theta+n_n}=\theta$.
+
+            Variance is found in a similar manner
+            $\sigma_{x_n}^2=\E{x_n - \E{x_n}}^2 = \E{\theta + n_n - \theta}^2 =
+            \E{n_n}^2=\sigma^2$
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            Each individual PDF is then given by
+            \begin{align*}
+                f_\theta(x_n) &= \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{\left(x_n - \theta\right)^2 }{2\sigma^2}\right) \\
+                f_n(x_n) &= \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{x_n^2 }{2\sigma^2}\right) \\
+            \end{align*}
+            Taking every observation into account, we find the PDFs by the product rule
+            \begin{align*}
+                f_\theta(\textbf{x}) &= \prod^{N}_{n=1} \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{\left(x_n - \theta\right)^2 }{2\sigma^2}\right) \\
+                f_n(\textbf{x}) &= \prod^{N}_{n=1} \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{x_n^2 }{2\sigma^2}\right) \\
+            \end{align*}
+        \end{column}
+    \end{columns}
+\end{frame} % >>>
 
 \end{document}
