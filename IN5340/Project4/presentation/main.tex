@@ -7,10 +7,9 @@
 \usepackage{metalogo}
 \usepackage{listings}
 \usepackage{fontspec}
-\usepackage{amsmath, amssymb}
+\usepackage{amsmath, amssymb, bm}
 \usepackage{stackrel}
 \usepackage{tikz}
-\usepackage{svg}
 \usepackage{unicode-math}
 \usepackage{subcaption}
 \usepackage[theme=nord,charsperline=60,linenumbers]{jlcode}
@@ -31,7 +30,7 @@
 
 \newcommand{\E}[1]{\ensuremath{E\left\{#1\right\}}}
 \newcommand{\norm}[1]{\ensuremath{\lVert#1\rVert}}
-\newcommand*{\thead}[1]{\multicolumn{1}{c}{\bfseries #1}}
+\newcommand*{\thead}[1]{\multicolumn{1}{c}{\fseries #1}}
 
 \newfontfamily\tabulartext[SizeFeatures={Size=6}]{Roboto}
 
@@ -193,8 +192,8 @@
             \end{align*}
             Taking every observation into account, we find the PDFs by the product rule
             \begin{align*}
-                f_\theta(\textbf{x}) &= \prod^{N}_{n=1} \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{\left(x_n - \theta\right)^2 }{2\sigma^2}\right) \\
-                f_n(\textbf{x}) &= \prod^{N}_{n=1} \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{x_n^2 }{2\sigma^2}\right) \\
+                f_\theta(\pmb{x}) &= \prod^{N}_{n=1} \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{\left(x_n - \theta\right)^2 }{2\sigma^2}\right) \\
+                f_n(\pmb{x}) &= \prod^{N}_{n=1} \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{x_n^2 }{2\sigma^2}\right) \\
             \end{align*}
         \end{column}
     \end{columns}
