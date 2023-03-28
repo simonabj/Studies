@@ -21,6 +21,7 @@
 % \setmonofont{CaskaydiaCove Nerd Font Mono}
 \setmonofont{JuliaMono}
 
+\setbeamercolor{mybullet}{use=itemize item.fg,bg=itemize item.fg,fg=itemize item.fg}
 
 \makeatletter
 \def\verbatim@nolig@list{}
@@ -41,6 +42,7 @@
 
 \DeclareMathOperator*{\argmax}{argmax}
 \DeclareMathOperator*{\Var}{Var}
+\DeclareMathOperator*{\test}{\gtrless}
 
 \AtBeginDocument{
     \fontsize{8}{12}
@@ -110,7 +112,6 @@
     \begin{columns}
         \begin{column}{0.5\textwidth}
             \begin{jllisting}[gobble=16]
-                # Code for calculation
                 θ = σ = 5
                 fn = Normal(0,σ); fs = Normal(θ,σ)
                 lines!(fn); lines!(fs)
@@ -133,8 +134,11 @@
     \frametitle{CFAR detector with $P_{FA} = 0.1$}
     
     We want a threshold $\beta$ such that $P_{FA} = 0.1$, which is given by 
-    $$\int^{\infty}_{\beta}{f_n(x)dx} = P_n(\beta \le x) = 1-F_n(\beta)$$ where $F_n(x)$ is the CDF
-    of the noise PDF. We know that the quantile function 
+    \begin{equation*}
+        \int^{\infty}_{\beta}{f_n(x)dx} = P_n(\beta \le x) = 1-F_n(\beta)
+    \end{equation*}
+    where $F_n(x)$ is the CDF of the noise PDF. 
+    We know that the quantile function 
     $Q: \left[0,1\right] \rightarrow \mathbb{R}$ is defined as the inverse CDF, s.t.
     $Q_n(q) = F^{-1}_n(q)$. This gives the threshold 
     $\beta = Q_n\left(1-P_{FA}\right)$. With $\beta$ given, we can easly find $P_D$ by
@@ -161,42 +165,215 @@
 \end{frame}
 % >>>
 
-\begin{frame} % <<< Multi-measure over transmit
-    \frametitle{Multi-measure over transmit}
+\begin{frame}[fragile] % <<< ROC of detector
+    \frametitle{ROC of detector}
+    We now want to find the ROC of the detector. We do this by evaluating the detector
+    at every possible threshold value.
+    \begin{columns}
+        \begin{column}{0.51\textwidth}
+            Create the data as done in assignmnet
+            \begin{jllisting}[gobble=16]
+                θ = σ = 5
+                nData = 1000
+                s = θ * (randn(nData,1) .>= 0); # True data
+                x = s + σ * randn(size(s))
+            \end{jllisting}
+            Then evaluate the true ROC and using the data
+            \begin{jllisting}[gobble=16]
+                # Theoretical ROC
+                βs = 20:-0.01:-20
+                TPR_true,TFP_true = ccdf.(fs,βs), ccdf.(fn,βs)
+                # Emprirical ROC
+                detector = map(β -> β .< x, βs)
+                TPR_data = map(result -> mean(result[s .> 0.5θ]), detector)
+                TFP_data = map(result -> mean(result[s .< 0.5θ]), detector);
+            \end{jllisting}
+        \end{column}
+        \begin{column}{0.49\textwidth}
+            By plotting TFP against TPR, we get the following ROC plot
+            \begin{figure}
+                \includegraphics[width=0.7\columnwidth]{"../d.pdf"}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame} 
+% >>>
+
+\begin{frame}[fragile] % <<< Several realizations
+    \frametitle{Several realizations}
+    We rap the code above into a function \texttt{roc\_realization()} and evaluate the
+    ROC for a few realization. 
     \begin{columns}
         \begin{column}{0.6\textwidth}
+            \begin{jllisting}[gobble=16]
+                many_runs = [ roc_realization() for _ in 1:50 ]
+                # Each row is an roc of threshold and columns are each run
+                # -> β × run
+                TPR_many = mapreduce(run -> run[1], hcat, many_runs)
+                TFP_many = mapreduce(run -> run[2], hcat, many_runs)  
+                # Takse the mean along runs
+                TPR_mean = mean(TPR_many, dims=2) 
+                TFP_mean = mean(TFP_many, dims=2);
+            \end{jllisting}
+            \pin We can see that increasing the number of realizations will
+            make the ROC of the data approach the theoretical ROC.
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \begin{figure}
+                \includegraphics[width=\columnwidth]{"../d2.pdf"}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame}
+% >>>
+
+% Wrong answer
+% \begin{frame} % <<< Multi-measure over transmit
+%     \frametitle{Multi-measure over transmit}
+%     \begin{columns}
+%         \begin{column}{0.6\textwidth}
+%             We now want to measure multiple times per transmit, such that 
+%             \begin{alignat*}{2}
+%                 H_{0}^{'} &: x_n = n_n &&\text{ for } n=1,\dots,N \\
+%                 H_{1}^{'} &: x_n = \theta + n_n &&\text{ for } n=1,\dots,N
+%             \end{alignat*}
+%             We know that the joint PDF for $N$ samples of the white additive noise is
+%             given by 
+%             \begin{equation*}
+%                 f_N\left(n\right) = \frac{1}{\left(2\pi\sigma^2\right)^{N/2}}\exp{\left(
+%                         -\sum^{N}_{n=1}{\frac{n_n^2}{2\sigma^2}}
+%                 \right) }
+%             \end{equation*}
+%             Since we see that $x_n$ has a Gaussian distribution, we find the mean
+%             $\E{x_n} = \E{x_n} = \E{\theta+n_n}=\theta$.
+%
+%             Variance is found in a similar manner
+%             $\sigma_{x_n}^2=\E{x_n - \E{x_n}}^2 = \E{\theta + n_n - \theta}^2 =
+%             \E{n_n}^2=\sigma^2$
+%         \end{column}
+%         \begin{column}{0.4\textwidth}
+%             Each individual PDF is then given by
+%             \begin{align*}
+%                 f_\theta(x_n) &= \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{\left(x_n - \theta\right)^2 }{2\sigma^2}\right) \\
+%                 f_n(x_n) &= \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{x_n^2 }{2\sigma^2}\right) \\
+%             \end{align*}
+%             Taking every observation into account, we find the PDFs by the product rule
+%             \begin{align*}
+%                 f_\theta(\pmb{x}) &= \prod^{N}_{n=1} \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{\left(x_n - \theta\right)^2 }{2\sigma^2}\right) \\
+%                 f_n(\pmb{x}) &= \prod^{N}_{n=1} \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{x_n^2 }{2\sigma^2}\right) \\
+%             \end{align*}
+%         \end{column}
+%     \end{columns}
+% \end{frame} % >>>
+
+\begin{frame}[fragile] % <<< Multi-measure over transmit
+    \frametitle{Multi-measure over transmit}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
             We now want to measure multiple times per transmit, such that 
             \begin{alignat*}{2}
                 H_{0}^{'} &: x_n = n_n &&\text{ for } n=1,\dots,N \\
                 H_{1}^{'} &: x_n = \theta + n_n &&\text{ for } n=1,\dots,N
             \end{alignat*}
-            We know that the joint PDF for $N$ samples of the white additive noise is
-            given by 
+            \pin Both distribution are sampled $N$ times and we take the mean.
             \begin{equation*}
-                f_N\left(n\right) = \frac{1}{\left(2\pi\sigma^2\right)^{N/2}}\exp{\left(
-                        -\sum^{N}_{n=1}{\frac{n_n^2}{2\sigma^2}}
-                \right) }
+                Z = \frac{1}{N}\sum^{N}_{i=1}{X_i}
             \end{equation*}
-            Since we see that $x_n$ has a Gaussian distribution, we find the mean
-            $\E{x_n} = \E{x_n} = \E{\theta+n_n}=\theta$.
-
-            Variance is found in a similar manner
-            $\sigma_{x_n}^2=\E{x_n - \E{x_n}}^2 = \E{\theta + n_n - \theta}^2 =
-            \E{n_n}^2=\sigma^2$
+            \pin We use the central limit theorem to find the distribution of
+            each variable
+            \begin{align*}
+                H_0^{'} &: z_0      \sim \mathcal{N}\left(0,\sigma / \sqrt{n} \right) \\
+                H_1^{'} &: z_\theta \sim  \mathcal{N}\left(\theta, \sigma / \sqrt{n} \right)
+            \end{align*} 
+            \pin PDFs are Normal distributions with $\sigma_N = \sigma/\sqrt(N)$
         \end{column}
-        \begin{column}{0.4\textwidth}
-            Each individual PDF is then given by
-            \begin{align*}
-                f_\theta(x_n) &= \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{\left(x_n - \theta\right)^2 }{2\sigma^2}\right) \\
-                f_n(x_n) &= \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{x_n^2 }{2\sigma^2}\right) \\
-            \end{align*}
-            Taking every observation into account, we find the PDFs by the product rule
-            \begin{align*}
-                f_\theta(\pmb{x}) &= \prod^{N}_{n=1} \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{\left(x_n - \theta\right)^2 }{2\sigma^2}\right) \\
-                f_n(\pmb{x}) &= \prod^{N}_{n=1} \frac{1}{\left(2\pi\sigma^2\right)^{1/2}}\exp\left(-\frac{x_n^2 }{2\sigma^2}\right) \\
-            \end{align*}
+        \begin{column}{0.5\textwidth}
+            \begin{jllisting}[gobble=16]
+                multi_fn = Normal(0, σ/sqrt(N))
+                multi_fs = Normal(θ, σ/sqrt(N))
+                β = cquantile(multi_fn, 0.1)
+                P_fa, P_d = ccdf(multi_fn, β), ccdf(multi_fs, β)
+            \end{jllisting}
+            This gives $P_{FA}=0.1$ to be $\beta = 2.42$ which gives a $P_D=0.91$.
+            \begin{figure}
+                \includegraphics[width=\columnwidth]{"../f.pdf"}
+            \end{figure}
         \end{column}
     \end{columns}
+\end{frame} 
+% >>>
+
+\begin{frame}[fragile] % <<< ROC with multiple measurements
+    \frametitle{ROC with multiple measurements}
+    We want to find the ROC for different number of measurements $N$ per observation.
+
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+
+            Define some functions, and loop over each value of $N$
+            \begin{jllisting}[gobble=16]
+                function make_observations(signal, noise_pdf, N)
+                    S = repeat(signal, 1, N)
+                    X = S .+ rand(noise_pdf, size(S))
+                    return X
+                end
+
+                mean_detector(observations, threshold) = mean(observations, dims=2) .>= threshold
+            \end{jllisting}
+            Then iterate over each value of $N$
+            \begin{jllisting}[gobble=16]
+                for (i,n) in enumerate([1,2,3,7,14])
+                    noise_pdf, signal_pdf = mean_cfar(fn, fs, n)
+                    X = make_observations(signal, fn, n)
+                    detector = map(β -> mean_detector(X, β), βs)
+                    # ...
+                end
+            \end{jllisting}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            Plotting the ROC for each detector, yields the following plot
+            \pin Increasing $N$ gives a better detector
+
+            \pin Data follows true roc as expected
+            \begin{figure}
+                \includegraphics[width=0.8\columnwidth]{"../g.pdf"}
+            \end{figure}
+        \end{column}
+    \end{columns}
+    
+\end{frame}
+% >>>
+
+\begin{frame} % <<< Detector problem when $P_0 \ne P_\theta$
+    \frametitle{Detector problem when $P_0 \ne P_\theta$}
+    We now want to look at a detection problem where the ratio between $0$ and
+    $\theta$ differ from $1$.
+
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+
+            \pin We find the ROC for this detector problem
+            \begin{figure}
+                \includegraphics[width=0.7\columnwidth]{"../h.pdf"}
+            \end{figure}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \pin There is no difference between the ROC plot when assuming 
+            $P_0 = P_\theta$ and with $P_0 \ne P_\theta$
+            \pin When assuming equal probability $P_0 = P_1$, ignoring cost gives
+            the maximum likelihood (ML) criterion
+            \begin{equation*}
+                \frac{f_\theta(\pmb{y})}{f_0(\pmb{y})} \test^{H_1}_{H_0} 1
+            \end{equation*}
+            \pin With {\em a priori} probability $P_0 \ne P_1$, ignoring cost gives 
+            the maximum {\em a posteriori} (MAP) criterion
+            \begin{equation*}
+                \frac{f_\theta(\pmb{y})}{f_0(\pmb{y})} \test^{H_1}_{H_0} \frac{P_0}{P_1}
+            \end{equation*}
+            \pin Only difference is threshold value given observations
+        \end{column}
+    \end{columns}
+
 \end{frame} % >>>
 
 \end{document}
