@@ -1,0 +1,8 @@
+{
+    "julia.additionalArgs": [
+        // "-JDspMakieSysImage.so"
+    ],
+    "cSpell.words": [
+        "randn"
+    ]
+}
