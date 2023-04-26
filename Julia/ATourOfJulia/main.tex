@@ -1,0 +1,225 @@
+% !TEX program = xelatex
+% vim:foldmethod=marker:foldmarker=<<<,>>>
+\documentclass[compress,aspectratio=169]{beamer}
+
+%<<< Preamble
+\usepackage[english]{babel}
+\usepackage{metalogo}
+\usepackage{listings}
+\usepackage{fontspec}
+\usepackage{amsmath, amssymb, bm}
+\usepackage{stackrel}
+\usepackage{tikz}
+\usepackage{unicode-math}
+\usepackage{subcaption}
+\usepackage[theme=nord,charsperline=60,linenumbers]{jlcode}
+% \usepackage[charsperline=60,linenumbers]{jlcode}
+
+% \usetheme{Boadilla}
+\usetheme{Nord}
+
+\setmainfont{Roboto}
+% \setsansfont{DejaVu Serif}
+% \setmonofont{CaskaydiaCove Nerd Font Mono}
+% \setmonofont{JuliaMono}
+\setmonofont{FiraCode Nerd Font Mono}
+
+\setbeamercolor{mybullet}{use=itemize item.fg,bg=itemize item.fg,fg=itemize item.fg}
+
+\makeatletter
+\def\verbatim@nolig@list{}
+\newcommand\pin{%
+\parbox[t]{10pt}{\raisebox{0.2pt}{\usebeamercolor[fg]{mybullet}{$\ast$}}}}
+\makeatother
+
+\newcommand{\E}[1]{\ensuremath{E\left\{#1\right\}}}
+\newcommand{\norm}[1]{\ensuremath{\lVert#1\rVert}}
+\newcommand*{\thead}[1]{\multicolumn{1}{c}{\fseries #1}}
+
+\newfontfamily\tabulartext[SizeFeatures={Size=6}]{Roboto}
+
+\hypersetup{
+    colorlinks=true,
+    urlcolor=NordBlue
+}
+
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\Var}{Var}
+\DeclareMathOperator*{\test}{\gtrless}
+
+% \AtBeginDocument{
+%     \fontsize{8}{12}
+%     \selectfont
+% }
+
+\AtBeginSection[]
+{
+    \begin{frame}[c,noframenumbering,plain]
+        \tableofcontents[sectionstyle=show/hide,subsectionstyle=show/show/hide]
+    \end{frame}
+}
+
+
+\AtBeginSubsection[]
+{
+    \begin{frame}[c,noframenumbering,plain]
+        \tableofcontents[sectionstyle=show/hide,subsectionstyle=show/shaded/hide]
+    \end{frame}
+}
+%>>>
+
+\title{A Tour of Julia}
+\subtitle{Future of coding}
+\author{\large Simon Andreas Bjørn}
+\date{\large March 14, 2023}
+
+\begin{document}
+
+\begin{frame}[plain,noframenumbering] % <<<
+    \maketitle
+    \begin{columns}
+        \begin{column}{0.7\textwidth}
+        \end{column}
+        \begin{column}{0.3\textwidth}
+            \begin{figure}
+                \includegraphics[width=\columnwidth]{"julia-logo-color.png"}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame}
+% >>>
+
+\begin{frame} % <<< What is Julia
+    \frametitle{What is Julia}
+    \begin{itemize}
+        \item General Purpose
+        \item Dynamically Typed
+        \item High Performance, JIT
+        \item Multi-platform
+        \item Numerical Language
+    \end{itemize}
+\end{frame} % >>>
+
+\begin{frame}[fragile] % <<< What does Julia look like
+    \frametitle{What does Julia look like}
+    \begin{jllisting}[gobble=8]
+        function simulate_launc(spaceship::SpaceVehicle, Δt::Number; max_duration::Number = 2000)
+            t = 0  # Start time
+            ship = copy(spaceship)
+            while whip.active_stage isa Rocket
+                while propellant(ship) > 0 && t <= max_duration
+                    boosters = sideboosters(ship)
+                    if !isempty(boosters) && sum(propellant.(boosters)) <= 0
+                        detach_sideboosters!(ship)
+                    end
+                    update!(ship, t, Δt)
+                    t += Δt
+                end
+                stage_separate!(ship)
+            end
+        end
+    \end{jllisting}
+\end{frame} 
+% >>>
+
+% Language tour
+
+\begin{frame} % <<< Language Tour :D
+    \frametitle{Language Tour :D}
+
+    \begin{itemize}
+        \item Functions
+        \item Variables
+        \item Loops
+        \item Conditions
+        \item Arrays
+    \end{itemize}
+\end{frame} % >>>
+
+\begin{frame}[fragile] % <<< Working with Julia
+    \frametitle{Working with Julia}
+    \begin{columns}
+        \begin{column}{0.4\textwidth}
+            \begin{itemize}
+                \item REPL-based workflow
+                \item Modules \& packages
+                \item Focus on VSCode integration
+                    \begin{itemize}
+                        \item In-Editor plots
+                        \item Jupyter kernel
+                        \item Line \& code-block execution
+                    \end{itemize}
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.6\textwidth}
+            Simple REPL and package example
+            \begin{verbatim}
+julia> print("Hello world!")
+Hello world!
+
+julia> 2+2
+4
+
+julia>]
+(@v1.8) pkg> add LinearAlgebra
+
+julia> using LinearAlgebra
+
+julia> norm(randn(2,2))
+1.995642503223222
+            \end{verbatim}
+
+        \end{column}
+    \end{columns}
+\end{frame}
+% >>>
+
+\begin{frame}[fragile] % <<< Composite Types
+    \frametitle{Composite Types}
+    Defining and combining types for concrete tasks.
+
+    \begin{columns}
+        \begin{column}{0.4\textwidth}
+            \begin{itemize}
+                \item Different from classes (C++ struct vs. class)
+                \item Type-hinting
+                \item Imutable by default.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.6\textwidth}
+            Python
+            \begin{jllisting}[gobble=16, language=python]
+                class Knight:
+                    def __init__(self, name, health, armor):
+                        self.name = name
+                        self.health = health
+                        self.armor = armor
+            \end{jllisting}
+            \begin{columns}
+                \begin{column}{0.5\textwidth}
+                    C/C++
+                    \begin{jllisting}[gobble=24,language=c]
+                        struct Knight {
+                            string name;
+                            int health;
+                            int armor;
+                        }
+                    \end{jllisting}
+                \end{column}
+                \begin{column}{0.5\textwidth}
+                    Julia
+                    \begin{jllisting}[gobble=24]
+                        struct Knight
+                            name::String
+                            health::Int
+                            armoar::Int
+                        end
+                    \end{jllisting}
+                \end{column}
+            \end{columns}
+        \end{column}
+    \end{columns}
+\end{frame}
+% >>>
+
+\end{document}
